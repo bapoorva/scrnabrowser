@@ -51,18 +51,16 @@ ui <- dashboardPage(
               box(width = 8, status = "primary",title = "Tsne Plot",solidHeader = TRUE,
                   plotOutput("tsneplot",width=700,height=700)),
               box(title = "Controls",solidHeader = TRUE,width=4,status='primary',
-                  selectInput("category", "Select one",c('Categories' = "var",'Cluster' = "clust", 'Gene Expression' = "geneexp"),selected = "clust"),
+                  selectInput("category", "Select one",c('Categories' = "var",'Cluster' = "clust", 'Gene Expression' = "geneexp"),selected = "geneexp"),
                   conditionalPanel(
                     condition = "input.category == 'var'",
                     uiOutput("variables")
                   ),
                   conditionalPanel(
-                    condition = "input.category == 'geneexp'",
-                              textInput("gene", label = h3("Gene Name"),
-                                        value = "SFTPB")),#close conditional panel
+                    condition = "input.category == 'geneexp'",textInput("gene", label = "Gene Name")
+                    ),#close conditional panel
                    uiOutput('range'),
                    sliderInput("pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25),
-                   #selectInput("colour", label = h3("Colour"),choices = colors(), selected = 'midnightblue'),
                    downloadButton('downloadPlot', 'Download')
                  
                     )#close control box

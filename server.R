@@ -65,15 +65,24 @@ server <- function(input, output,session) {
   
   tsneplot = reactive({
     scrna=fileload()
+    variable=input$var
     if(input$category=="clust"){
     TSNEPlot(object = scrna,group.by = "ident",pt.size=input$pointsize)
     }else if(input$category=="var"){
-      TSNEPlot(object = scrna,pt.size=2,group.by = variable)
+      TSNEPlot(object = scrna,pt.size=2,group.by = variable,pt.size=input$pointsize)
+    }else if(input$category=="geneexp"){
+      validate(
+        need(is.na(input$gene) == F, "Enter Gene name")
+      )
+      genes=input$gene
+      genes=unlist(strsplit(genes,","))
+      FeaturePlot(object = scrna, features.plot = genes, cols.use = c("grey", "blue"),reduction.use = "tsne",pt.size = input$pointsize,nCol = 2)
     }
   })
   
   output$tsneplot = renderPlot({
     input$category
+    input$gene
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
       tsneplot()
     })
