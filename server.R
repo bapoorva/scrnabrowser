@@ -65,22 +65,23 @@ server <- function(input, output,session) {
   
   tsneplot = reactive({
     scrna=fileload()
-    variable=input$var
+    variable=as.character(input$var)
     if(input$category=="clust"){
-    TSNEPlot(object = scrna,group.by = "ident",pt.size=input$pointsize)
+      TSNEPlot(object = scrna,group.by = "ident",do.hover = T,no.legend = FALSE)
     }else if(input$category=="var"){
-      TSNEPlot(object = scrna,pt.size=2,group.by = variable,pt.size=input$pointsize)
+      TSNEPlot(object = scrna,group.by = variable)
     }else if(input$category=="geneexp"){
-      validate(
-        need(is.na(input$gene) == F, "Enter Gene name")
-      )
+      # validate(
+      #   need(is.na(input$gene) == F, "Enter Gene name")
+      # )
       genes=input$gene
       genes=unlist(strsplit(genes,","))
-      FeaturePlot(object = scrna, features.plot = genes, cols.use = c("grey", "blue"),reduction.use = "tsne",pt.size = input$pointsize,nCol = 2)
+      FeaturePlot(object = scrna, features.plot = genes, cols.use = c("grey", "blue"),reduction.use = "tsne",
+                  do.hover = T,no.legend = FALSE,data.hover = c("ident","nUMI", "nGene"))
     }
   })
   
-  output$tsneplot = renderPlot({
+  output$tsneplot = renderPlotly({
     input$category
     input$gene
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
@@ -98,4 +99,41 @@ server <- function(input, output,session) {
       tsneplot()
       dev.off()
     })
+  
+  ###################################################
+  ###################################################
+  ####### Display Biplot plot with controls #########
+  ###################################################
+  ###################################################
+
+  output$bigeneplot <- renderPlot({
+    withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+    scrna=fileload()
+    FeaturePlot(object = scrna, features.plot = c(input$bigene_genea,input$bigene_geneb), cols.use = c("grey","red","blue","green"),reduction.use = "tsne",
+                no.legend = FALSE,overlay=TRUE,pt.size = input$bigene_pointsize)
+    })
+  })
+
+  output$downloadbigene <- downloadHandler(
+    filename = function(){
+      paste0('biplot','.jpg',sep='')
+    },
+    content = function(file){
+      png(file)
+      jpeg(file, quality = 100, width = 800, height = 1300)
+      bigeneplot()
+      dev.off()
+    })
+
+  ###################################################
+  ###################################################
+  ####### Display Heatmap plot with controls  #######
+  ###################################################
+  ###################################################
+  
+  ###################################################
+  ###################################################
+  ####### Display DEG plot with controls  ###########
+  ###################################################
+  ###################################################
 }#end of server

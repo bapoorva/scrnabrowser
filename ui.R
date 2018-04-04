@@ -21,7 +21,10 @@ ui <- dashboardPage(
                    sidebarMenu(
                      menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
                      uiOutput("projects"),
-                     menuItem('Tsne Plot', tabName = 'tsneplot', icon = icon('hand-o-right'))
+                     menuItem('Tsne Plot', tabName = 'tsneplot', icon = icon('hand-o-right')),
+                     menuItem('Biplot', tabName = 'biplot', icon = icon('hand-o-right')),
+                     menuItem('Heatmap', tabName = 'heatmap', icon = icon('hand-o-right')),
+                     menuItem('Differential Expression', tabName = 'deg', icon = icon('hand-o-right'))
                      #          menuSubItem("PCA Plot", tabName = "dashboard"),
                      #          menuSubItem('Display Variances', tabName = 'var'),
                      #          menuSubItem('Show 3D plot', tabName = '3dplot')),
@@ -46,10 +49,11 @@ ui <- dashboardPage(
                 tableOutput("datasetTable")
               )
       ),
+    ######################################################################################################################################
     tabItem(tabName = "tsneplot",
             fluidRow(
               box(width = 8, status = "primary",title = "Tsne Plot",solidHeader = TRUE,
-                  plotOutput("tsneplot",width=700,height=700)),
+                  plotlyOutput("tsneplot",height=700)),
               box(title = "Controls",solidHeader = TRUE,width=4,status='primary',
                   selectInput("category", "Select one",c('Categories' = "var",'Cluster' = "clust", 'Gene Expression' = "geneexp"),selected = "geneexp"),
                   conditionalPanel(
@@ -57,51 +61,30 @@ ui <- dashboardPage(
                     uiOutput("variables")
                   ),
                   conditionalPanel(
-                    condition = "input.category == 'geneexp'",textInput("gene", label = "Gene Name")
+                    condition = "input.category == 'geneexp'",textInput("gene", label = "Gene Name",value = "Axin2")
                     ),#close conditional panel
                    uiOutput('range'),
-                   sliderInput("pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25),
+                   #sliderInput("pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25),
                    downloadButton('downloadPlot', 'Download')
                  
                     )#close control box
                     )#close fluid row
-                  )#end tab item
-      
-
-      # # Second tab content
-      # tabItem(tabName = "biplot",
-      #         fluidRow(
-      #           box(plotOutput("bigeneplot", height = 600),width=8, status='primary'),
-      #           
-      #           box(
-      #             title = "Controls",solidHeader = TRUE,width=4,status='primary',
-      #             textInput("bigene_genea", label = h3("Gene A"), 
-      #                       value = "SFTPB"),
-      #             #sliderInput("bigene_rangea", "Expression Limits Gene A(log2(UMI)):",
-      #             #           min = 0, max = 10, value = c(0,.1),step=.01),
-      #             uiOutput("bigene_rangea"),
-      #             
-      #             textInput("bigene_geneb", label = h3("Gene B"), 
-      #                       value = "DCN"),
-      #             uiOutput("bigene_rangeb"),
-      #             # sliderInput("bigene_rangeb", "Expression Limits Gene B (log2(UMI)):",
-      #             #            min = 0, max = 10, value = c(0,.1),step=.01),
-      #             sliderInput("bigene_pointsize", "Point Size:",
-      #                         min = 0, max = 5, value = 1,step=.25),
-      #             radioButtons("bigene_imagetype", label = h3("Image Type"),
-      #                          choices = list("PNG" = 'png', "PDF" = 'pdf'), 
-      #                          selected = 'png'),
-      #             downloadButton('downloadbigene', 'Download')
-      #           )
-      #         ),
-      #         fluidRow(
-      #           box(plotOutput("bigene_piechart", height = 300),width=6,status='primary'),
-      #           box(tableOutput("bigene_countsTable"),
-      #               width = 6, status = "primary",
-      #               title = "BiGene Summary"
-      #           )
-      #         )#End FluidRow
-      # ),#endbigeneplotTab
+                  ),#end tab item
+    ###################################################################################################################################### 
+      # Second tab content
+      tabItem(tabName = "biplot",
+              fluidRow(
+                box(plotOutput("bigeneplot", height = 600),width=8, status='primary'),
+                box(
+                  title = "Controls",solidHeader = TRUE,width=4,status='primary',
+                  textInput("bigene_genea", label = "Gene A",value = "Sox2"),
+                  textInput("bigene_geneb", label = "Gene B",value = "Sox9"),
+                  sliderInput("bigene_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25),
+                  downloadButton('downloadbigene', 'Download')
+                )
+              )#End FluidRow
+      )#endbigeneplotTab
+    ######################################################################################################################################
       # tabItem(tabName = "grpplot",
       #         fluidRow(
       #           box(plotOutput("grpPlot", height = 600),width=8),
