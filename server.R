@@ -244,7 +244,9 @@ server <- function(input, output,session) {
     if(input$identb==""){
       markers=FindMarkers(object = scrna, ident.1 = input$identa, min.pct = input$minpct,logfc.threshold=input$lfc,test.use=input$test)
     }else{
-    markers=FindMarkers(object = scrna, ident.1 = input$identa, ident.2 = input$identb, min.pct = input$minpct,logfc.threshold=input$lfc,test.use=input$test)
+      identb=input$identb
+      p=unlist(strsplit(identb,","))
+    markers=FindMarkers(object = scrna, ident.1 = input$identa, ident.2 = p, min.pct = input$minpct,logfc.threshold=input$lfc,test.use=input$test)
     }
     })
   })
