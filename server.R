@@ -14,6 +14,7 @@ library(shinyRGL)
 library(rgl)
 library(rglwidget)
 library(Seurat)
+library(cowplot)
 
 
 server <- function(input, output,session) {
@@ -63,6 +64,12 @@ server <- function(input, output,session) {
     selectInput("var","Select a Variable",var,"pick one")
   })
   
+  output$genes = renderUI({
+    scrna=fileload()
+    genelist=rownames(scrna@scale.data)
+    selectizeInput("gene","Enter gene(s)",genelist, selected = "Hopx", multiple = FALSE,options = list(maxItems = 1))
+  })
+  
   tsneplot = reactive({
     scrna=fileload()
     pdf(NULL)
@@ -72,7 +79,7 @@ server <- function(input, output,session) {
     feature=c("nGene","nUMI","percent.mito","S.Score","G2M.Score")
     tsne=c(colnames(metadata),"Phase")
     if(input$category =="clust"){
-      TSNEPlot(object = scrna,group.by = "ident",do.hover = T,no.legend = FALSE,data.hover = c("ident","nUMI", "nGene"))
+      TSNEPlot(object = scrna,group.by = "ident",do.hover = T,no.legend = FALSE,data.hover = c("ident","nUMI", "nGene"),do.label=TRUE)
     }else if(input$category=="geneexp"){
       genes=input$gene
       genes=unlist(strsplit(genes,","))
@@ -94,14 +101,37 @@ server <- function(input, output,session) {
     })
   })
   
+  tsneplot_dwld = reactive({
+    scrna=fileload()
+    pdf(NULL)
+    metadata=as.data.frame(scrna@meta.data)
+    metadata=metadata %>% select(starts_with("var"))
+    variable=input$var
+    feature=c("nGene","nUMI","percent.mito","S.Score","G2M.Score")
+    tsne=c(colnames(metadata),"Phase")
+    if(input$category =="clust"){
+      TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label=TRUE,do.return=TRUE)
+    }else if(input$category=="geneexp"){
+      genes=input$gene
+      genes=unlist(strsplit(genes,","))
+      FeaturePlot(object = scrna, features.plot = genes, cols.use = c("grey", "blue"),reduction.use = "tsne",
+                  no.legend = FALSE,do.return=TRUE)
+    }else if(input$category =="var" & input$var %in% tsne){
+      TSNEPlot(object = scrna,group.by = variable,no.legend = FALSE,do.return=TRUE)
+    }else if(input$category =="var" & input$var %in% feature){
+      FeaturePlot(object = scrna, features.plot = variable, cols.use = c("grey", "blue"),reduction.use = "tsne",
+                  no.legend = FALSE,do.return=TRUE)
+    }
+  })
+  
   output$downloadPlot <- downloadHandler(
     filename = function(){
       paste0('tsneplot','.jpg',sep='')
     },
     content = function(file){
-      png(file)
       jpeg(file, quality = 100, width = 800, height = 1300)
-      tsneplot()
+      p1=tsneplot_dwld()
+      plot(p1[[1]])
       dev.off()
     })
   ###################################################
@@ -179,12 +209,18 @@ server <- function(input, output,session) {
   ####### Display Biplot plot with controls #########
   ###################################################
   ###################################################
-
+  
+  bigeneplot <- reactive({
+    withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+      scrna=fileload()
+      FeaturePlot(object = scrna, features.plot = c(input$bigene_genea,input$bigene_geneb), cols.use = c("grey","red","blue","green"),reduction.use = "tsne",
+                  no.legend = FALSE,overlay=TRUE,pt.size = input$bigene_pointsize,do.return = T)
+    })
+  })
+  
   output$bigeneplot <- renderPlot({
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
-    scrna=fileload()
-    FeaturePlot(object = scrna, features.plot = c(input$bigene_genea,input$bigene_geneb), cols.use = c("grey","red","blue","green"),reduction.use = "tsne",
-                no.legend = FALSE,overlay=TRUE,pt.size = input$bigene_pointsize,do.return = T)
+    bigeneplot()
     })
   })
 
@@ -193,9 +229,8 @@ server <- function(input, output,session) {
       paste0('biplot','.jpg',sep='')
     },
     content = function(file){
-      png(file)
       jpeg(file, quality = 100, width = 800, height = 1300)
-      bigeneplot()
+      plot(bigeneplot())
       dev.off()
     })
   
@@ -225,12 +260,45 @@ server <- function(input, output,session) {
                   rownames=TRUE,selection = list(mode = 'single', selected =1),escape=FALSE)
   })
   
-  output$markgeneplot <- renderPlot({
+  ###################################################
+  ###################################################
+  ####### Display feature plot with controls  #######
+  ###################################################
+  ###################################################
+  
+  output$markergenes_out = DT::renderDataTable({
+    input$identa
+    input$identb
+    DT::datatable(markergenes(),
+                  extensions = 'Buttons', options = list(
+                    dom = 'Bfrtip',
+                    buttons = list()),
+                  rownames=TRUE,selection = list(mode = 'single', selected =1),escape=FALSE)
+  })
+  
+  markgeneplot <- reactive({
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
       scrna=fileload()
       markers=markergenes()
-      FeaturePlot(object = scrna, features.plot = rownames(markers)[1:input$cowplot], cols.use = c("grey","blue"),reduction.use = "tsne",
-                  no.legend = FALSE,pt.size = input$marker_pointsize)
+      s=input$markergenes_out_rows_selected # get  index of selected row from table
+      markers=markers[s, ,drop=FALSE]
+      FeaturePlot(object = scrna, features.plot = rownames(markers), cols.use = c("grey","blue"),reduction.use = "tsne",
+                  no.legend = FALSE,pt.size = input$marker_pointsize,do.return = T)
+    })
+  })
+  
+  # markgeneplot <- reactive({
+  #   withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+  #     scrna=fileload()
+  #     markers=markergenes()
+  #     FeaturePlot(object = scrna, features.plot = rownames(markers)[1:input$cowplot], cols.use = c("grey","blue"),reduction.use = "tsne",
+  #                 no.legend = FALSE,pt.size = input$marker_pointsize)
+  #   })
+  # })
+  
+  output$markgeneplot <- renderPlot({
+    withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+      markgeneplot()
     })
   })
   
@@ -245,7 +313,6 @@ server <- function(input, output,session) {
       paste0('featureplot','.jpg',sep='')
     },
     content = function(file){
-      png(file)
       jpeg(file, quality = 100, width = 800, height = 1300)
       markgeneplot()
       dev.off()
@@ -266,7 +333,7 @@ server <- function(input, output,session) {
     })
   })
   
-   output$violinplot <- renderPlot({
+   violinplot <- reactive({
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
       scrna=fileload()
       markers=markergenes()
@@ -274,6 +341,11 @@ server <- function(input, output,session) {
     })
   })
   
+   output$violinplot <- renderPlot({
+     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+       violinplot()
+     })
+   })
   ###################################################
   ###################################################
   ####### Display Heatmap plot with controls  #######

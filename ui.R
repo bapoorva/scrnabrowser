@@ -51,13 +51,13 @@ ui <- dashboardPage(
               box(width = 8, status = "primary",title = "Tsne Plot",solidHeader = TRUE,
                   plotlyOutput("tsneplot",height=700)),
               box(title = "Controls",solidHeader = TRUE,width=4,status='primary',
-                  selectInput("category", "Select one",c('Categories' = "var",'Cluster' = "clust", 'Gene Expression' = "geneexp"),selected = "geneexp"),
+                  selectInput("category", "Select one",c('Categories' = "var",'Cluster' = "clust", 'Gene Expression' = "geneexp"),selected = "clust"),
                   conditionalPanel(
                     condition = "input.category == 'var'",
                     uiOutput("variables")
                   ),
                   conditionalPanel(
-                    condition = "input.category == 'geneexp'",textInput("gene", label = "Gene Name",value = "Axin2")
+                    condition = "input.category == 'geneexp'",uiOutput("genes")
                     ),#close conditional panel
                    uiOutput('range'),
                    downloadButton('downloadPlot', 'Download')
@@ -67,7 +67,7 @@ ui <- dashboardPage(
     ###################################################################################################################################### 
       tabItem(tabName = "biplot",
               fluidRow(
-                box(plotOutput("bigeneplot", height = 600),width=8, status='primary'),
+                box(plotOutput("bigeneplot", height = 600),width=8, status='primary',title = "Bigene Plot",solidHeader = TRUE),
                 box(
                   title = "Controls",solidHeader = TRUE,width=4,status='primary',
                   textInput("bigene_genea", label = "Gene A",value = "Sox2"),
@@ -136,7 +136,8 @@ ui <- dashboardPage(
     tabItem(tabName = "featureplots",
             box(
               title = "Controls",solidHeader = TRUE,width=12,status='primary',
-              sliderInput("cowplot", "Number of top genes to plot:",min = 1, max = 16, value = 4),
+              #sliderInput("cowplot", "Number of top genes to plot:",min = 1, max = 16, value = 4),
+              DT::dataTableOutput('markergenes_out'),
               sliderInput("marker_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25),
               downloadButton('dwldfeature', 'Download plot')
             ),
