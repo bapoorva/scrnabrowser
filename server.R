@@ -126,12 +126,11 @@ server <- function(input, output,session) {
   
   output$downloadPlot <- downloadHandler(
     filename = function(){
-      paste0('tsneplot','.jpg',sep='')
+      paste0('tsneplot','.pdf',sep='')
     },
     content = function(file){
-      jpeg(file, quality = 100, width = 800, height = 1300)
-      p1=tsneplot_dwld()
-      plot(p1[[1]])
+      pdf(file, width = 800, height = 1300)
+      tsneplot_dwld()
       dev.off()
     })
   ###################################################

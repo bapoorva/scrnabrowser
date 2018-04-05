@@ -59,8 +59,8 @@ ui <- dashboardPage(
                   conditionalPanel(
                     condition = "input.category == 'geneexp'",uiOutput("genes")
                     ),#close conditional panel
-                   uiOutput('range'),
-                   downloadButton('downloadPlot', 'Download')
+                   uiOutput('range')
+                   #downloadButton('downloadPlot', 'Download')
                     )#close control box
                     )#close fluid row
                   ),#end tab item
@@ -72,8 +72,8 @@ ui <- dashboardPage(
                   title = "Controls",solidHeader = TRUE,width=4,status='primary',
                   textInput("bigene_genea", label = "Gene A",value = "Sox2"),
                   textInput("bigene_geneb", label = "Gene B",value = "Sox9"),
-                  sliderInput("bigene_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25),
-                  downloadButton('downloadbigene', 'Download')
+                  sliderInput("bigene_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25)
+                  #downloadButton('downloadbigene', 'Download')
                 )
               )#End FluidRow
       ),#endbigeneplotTab
@@ -127,8 +127,8 @@ ui <- dashboardPage(
               box(
                 title = "Controls",solidHeader = TRUE,width=12,status='primary',
                 sliderInput("vplot", "Number of top genes to plot:",min = 1, max = 20, value = 4),
-                uiOutput("grptype"),
-                downloadButton('downloadviolin', 'Download')
+                uiOutput("grptype")
+                #downloadButton('downloadviolin', 'Download')
               ),
             box(plotOutput("violinplot", height = 900),width=12, status='primary',solidHeader = TRUE,title="Top genes- Violin Plot")
     ),#end of tab
@@ -138,8 +138,8 @@ ui <- dashboardPage(
               title = "Controls",solidHeader = TRUE,width=12,status='primary',
               #sliderInput("cowplot", "Number of top genes to plot:",min = 1, max = 16, value = 4),
               DT::dataTableOutput('markergenes_out'),
-              sliderInput("marker_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25),
-              downloadButton('dwldfeature', 'Download plot')
+              sliderInput("marker_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25)
+              #downloadButton('dwldfeature', 'Download plot')
             ),
             box(plotOutput("markgeneplot", height = 900),width=12, status='primary',solidHeader = TRUE,title="Top Marker genes")
     ),#end of tab
