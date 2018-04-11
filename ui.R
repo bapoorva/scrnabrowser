@@ -21,12 +21,12 @@ ui <- dashboardPage(
                    sidebarMenu(
                      menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
                      uiOutput("projects"),
-                     menuItem('tSNE Plot', tabName = 'tsneplot', icon = icon('hand-o-right')),
+                     menuItem('Compare tSNE Plots', tabName = 'tsneplot', icon = icon('hand-o-right')),
                      menuItem('Biplot', tabName = 'biplot', icon = icon('hand-o-right')),
                      menuItem('Differential Expression', tabName = 'mgenes', icon = icon('hand-o-right'),
-                              menuSubItem("Find Marker Genes", tabName = "deg"),
-                              menuSubItem("Violin Plots", tabName = "violinplot"),
-                              menuSubItem("Feature plots", tabName = "featureplots")),
+                              menuSubItem("Find Marker Genes", tabName = "deg")),
+                              #menuSubItem("Violin Plots", tabName = "violinplot"),
+                              #menuSubItem("Feature plots", tabName = "featureplots")),
                      #menuItem('Violin Plots', tabName = 'violinplot', icon = icon('hand-o-right')),
                      menuItem('Heatmap', tabName = 'heatmap', icon = icon('hand-o-right'))
                    )#end of sidebar menu
@@ -46,24 +46,55 @@ ui <- dashboardPage(
               )
       ),
     ######################################################################################################################################
+    # tabItem(tabName = "tsneplot",
+    #         fluidRow(
+    #           box(width = 8, status = "primary",title = "Tsne Plot",solidHeader = TRUE,
+    #               plotlyOutput("tsneplot",height=700)),
+    #           box(title = "Controls",solidHeader = TRUE,width=4,status='primary',
+    #               selectInput("category", "Select one",c('Categories' = "var",'Cluster' = "clust", 'Gene Expression' = "geneexp"),selected = "clust"),
+    #               conditionalPanel(
+    #                 condition = "input.category == 'var'",
+    #                 uiOutput("variables")
+    #               ),
+    #               conditionalPanel(
+    #                 condition = "input.category == 'geneexp'",uiOutput("genes")
+    #                 ),#close conditional panel
+    #                uiOutput('range')
+    #                #downloadButton('downloadPlot', 'Download')
+    #                 )#close control box
+    #                 )#close fluid row
+    #               ),#end tab item
     tabItem(tabName = "tsneplot",
-            fluidRow(
-              box(width = 8, status = "primary",title = "Tsne Plot",solidHeader = TRUE,
-                  plotlyOutput("tsneplot",height=700)),
-              box(title = "Controls",solidHeader = TRUE,width=4,status='primary',
-                  selectInput("category", "Select one",c('Categories' = "var",'Cluster' = "clust", 'Gene Expression' = "geneexp"),selected = "clust"),
-                  conditionalPanel(
-                    condition = "input.category == 'var'",
-                    uiOutput("variables")
+            box(title = "Compare tSNE plots",solidHeader = TRUE,width=12,status='primary',
+                fluidRow(
+                  column(6,selectInput("categorya2", "Select one",c('Categories' = "var",'Cluster' = "clust", 'Gene Expression' = "geneexp"),selected = "clust")),
+                  column(6,selectInput("categoryb2", "Select one",c('Categories' = "var",'Cluster' = "clust", 'Gene Expression' = "geneexp"),selected = "clust"))
+                ),
+                sliderInput("pointa2", "Point Size:",min = 0, max = 5, value = 1,step=.25),
+                # fluidRow(
+                #   column(6,sliderInput("pointa2", "Point Size:",min = 0, max = 5, value = 1,step=.25)),
+                #   column(6,sliderInput("pointb2", "Point Size:",min = 0, max = 5, value = 1,step=.25))
+                # ),
+                fluidRow(
+                  column(6,conditionalPanel(
+                    condition = "input.categorya2 == 'var'",
+                    uiOutput("tsnea2")
                   ),
                   conditionalPanel(
-                    condition = "input.category == 'geneexp'",uiOutput("genes")
-                    ),#close conditional panel
-                   uiOutput('range')
-                   #downloadButton('downloadPlot', 'Download')
-                    )#close control box
-                    )#close fluid row
-                  ),#end tab item
+                    condition = "input.categorya2 == 'geneexp'",textInput("gene1a", label = "Gene Name",value = "Axin2")
+                  )
+                  ),
+                  column(6,conditionalPanel(
+                    condition = "input.categoryb2 == 'var'",
+                    uiOutput("tsneb2")
+                  ),
+                  conditionalPanel(
+                    condition = "input.categoryb2 == 'geneexp'",textInput("gene2a", label = "Gene Name",value = "Axin2")
+                  )
+                  )),
+                plotOutput("comptsne2", height = 600)
+            )
+    ),#end of degtab
     ###################################################################################################################################### 
       tabItem(tabName = "biplot",
               fluidRow(
@@ -79,70 +110,76 @@ ui <- dashboardPage(
       ),#endbigeneplotTab
     ######################################################################################################################################
     tabItem(tabName = "deg",
-            box(title = "Compare tSNE plots",solidHeader = TRUE,width=12,status='primary',
-                fluidRow(
-                  column(6,selectInput("categorya", "Select one",c('Categories' = "var",'Cluster' = "clust", 'Gene Expression' = "geneexp"),selected = "clust")),
-                  column(6,selectInput("categoryb", "Select one",c('Categories' = "var",'Cluster' = "clust", 'Gene Expression' = "geneexp"),selected = "clust"))
-                  # column(6,uiOutput("tsnea")),
-                  # column(6,uiOutput("tsneb"))
-                ),
-                fluidRow(
-                  column(6,sliderInput("pointa", "Point Size:",min = 0, max = 5, value = 1,step=.25)),
-                  column(6,sliderInput("pointb", "Point Size:",min = 0, max = 5, value = 1,step=.25))
-                ),
-                fluidRow(
-                  column(6,conditionalPanel(
-                    condition = "input.categorya == 'var'",
-                    uiOutput("tsnea")
-                  ),
-                  conditionalPanel(
-                    condition = "input.categorya == 'geneexp'",textInput("gene1", label = "Gene Name",value = "Axin2")
-                  )
-                  ),
-                  column(6,conditionalPanel(
-                    condition = "input.categoryb == 'var'",
-                    uiOutput("tsneb")
-                  ),
-                  conditionalPanel(
-                    condition = "input.categoryb == 'geneexp'",textInput("gene2", label = "Gene Name",value = "Axin2")
-                  )
-                  )),
+            box(title = "Compare tSNE plots",solidHeader = TRUE,width=8,status='primary',
+                # fluidRow(
+                #   column(6,selectInput("categorya", "Select one",c('Categories' = "var",'Cluster' = "clust"),selected = "clust"))
+                #   #column(6,selectInput("categoryb", "Select one",c('Select from table' = "selectftab",'Categories' = "var"),selected = "selectftab"))
+                # ),
+                
+                # fluidRow(
+                #   column(6,sliderInput("pointa", "Point Size:",min = 0, max = 5, value = 1,step=.25)),
+                #   column(6,sliderInput("pointb", "Point Size:",min = 0, max = 5, value = 1,step=.25))
+                # ),
+                # fluidRow(
+                #   column(6,conditionalPanel(
+                #     condition = "input.categorya == 'var'",
+                #     uiOutput("tsnea")
+                #   ),
+                #   conditionalPanel(
+                #     condition = "input.categorya == 'geneexp'",textInput("gene1", label = "Gene Name",value = "Axin2")
+                #   )
+                #   ),
+                #   column(6,conditionalPanel(
+                #     condition = "input.categoryb == 'var'",
+                #     uiOutput("tsneb")
+                #   ),
+                #   conditionalPanel(
+                #     condition = "input.categoryb == 'geneexp'",textInput("gene2", label = "Gene Name",value = "Axin2")
+                #   )
+                #   )),
                 plotOutput("comptsne", height = 900)
             ),
+            
+              
+              #box(plotOutput("violinplot", height = 500),width=12, status='primary',solidHeader = TRUE,title="Top genes- Violin Plot"),
+              #downloadButton('downloadviolin', 'Download')
+            
             fluidRow(
               box(
                 title = "Controls",solidHeader = TRUE,width=4,status='primary',
-                textInput("identa", label = "Identity A",value = "1"),
-                textInput("identb", label = "Identity B"),
+                selectInput("categorya", "Select Category to display",c('Categories' = "var",'Cluster' = "clust"),selected = "clust"),
+                conditionalPanel(
+                    condition = "input.categorya == 'var'",
+                    uiOutput("tsnea")
+                  ),
+                sliderInput("pointa", "Point Size:",min = 0, max = 5, value = 1,step=.25),
+                textInput("identa", label = "First cluster to compare",value = "0"),
+                textInput("identb", label = "Second Cluster(s) to compare", value = "1"),
                 sliderInput("lfc", "Log FC threshold:",min = 0.25, max = 6, value = 0.25,step=.25),
                 selectInput("test", "Select test to use",c('Wilcox' = "wilcox",'T-test' = "t", 'Poisson' = "poisson",'Negative Binomial'="negbinom","DESeq2"="DESeq2"),selected = "wilcox"),
                 sliderInput("minpct", "Minimum Percent of cells:",min = 0.1, max = 10, value = 0.25),
+                uiOutput("grptype"),
                 downloadButton('downloaddeg', 'Download table')
               ),
-              box(DT::dataTableOutput('markergenes'),width=8, status='primary',solidHeader = TRUE,title="Marker genes")
+              box(DT::dataTableOutput('markergenes'),width=12, status='primary',solidHeader = TRUE,title="Marker genes")
             )#End FluidRow
     ),#end of degtab
     ######################################################################################################################################
-    tabItem(tabName = "violinplot",
-              box(
-                title = "Controls",solidHeader = TRUE,width=12,status='primary',
-                sliderInput("vplot", "Number of top genes to plot:",min = 1, max = 20, value = 4),
-                uiOutput("grptype")
-                #downloadButton('downloadviolin', 'Download')
-              ),
-            box(plotOutput("violinplot", height = 900),width=12, status='primary',solidHeader = TRUE,title="Top genes- Violin Plot")
-    ),#end of tab
+    # tabItem(tabName = "violinplot",
+    #           
+    #         
+    # ),#end of tab
     ######################################################################################################################################
-    tabItem(tabName = "featureplots",
-            box(
-              title = "Controls",solidHeader = TRUE,width=12,status='primary',
-              #sliderInput("cowplot", "Number of top genes to plot:",min = 1, max = 16, value = 4),
-              DT::dataTableOutput('markergenes_out'),
-              sliderInput("marker_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25)
-              #downloadButton('dwldfeature', 'Download plot')
-            ),
-            box(plotOutput("markgeneplot", height = 900),width=12, status='primary',solidHeader = TRUE,title="Top Marker genes")
-    ),#end of tab
+    # tabItem(tabName = "featureplots",
+    #         box(
+    #           title = "Controls",solidHeader = TRUE,width=12,status='primary',
+    #           #sliderInput("cowplot", "Number of top genes to plot:",min = 1, max = 16, value = 4),
+    #           DT::dataTableOutput('markergenes_out'),
+    #           sliderInput("marker_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25)
+    #           #downloadButton('dwldfeature', 'Download plot')
+    #         ),
+    #         box(plotOutput("markgeneplot", height = 900),width=12, status='primary',solidHeader = TRUE,title="Top Marker genes")
+    # ),#end of tab
     ######################################################################################################################################
     tabItem(tabName = "heatmap",
             box(

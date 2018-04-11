@@ -54,85 +54,145 @@ server <- function(input, output,session) {
   ####### Display Tsne plot with controls  ##########
   ###################################################
   ###################################################
-  
-  #get all categorical variables from metadata
-  output$variables = renderUI({
+  output$tsnea2 = renderUI({
     scrna=fileload()
-    metadata=as.data.frame(scrna@meta.data) %>% dplyr::select(-orig.ident,-old.ident,-res.0.6)
+    metadata=as.data.frame(scrna@meta.data) %>% dplyr::select(-res.0.6)
     #metadata=metadata %>% select(starts_with("var"))
     var=colnames(metadata)
-    selectInput("var","Select a Variable",var,"pick one")
+    selectInput("tsnea2","Select a Variable",var,"pick one")
   })
   
-  output$genes = renderUI({
+  output$tsneb2 = renderUI({
     scrna=fileload()
-    genelist=rownames(scrna@scale.data)
-    selectizeInput("gene","Enter gene(s)",genelist, selected = "Hopx", multiple = FALSE,options = list(maxItems = 1))
+    metadata=as.data.frame(scrna@meta.data) %>% dplyr::select(-res.0.6)
+    #metadata=metadata %>% select(starts_with("var"))
+    var=colnames(metadata)
+    selectInput("tsneb2","Select a Variable",var,"pick one")
   })
   
-  tsneplot = reactive({
+  comptsne2 = reactive({
     scrna=fileload()
-    pdf(NULL)
     metadata=as.data.frame(scrna@meta.data)
     metadata=metadata %>% select(starts_with("var"))
-    variable=input$var
-    feature=c("nGene","nUMI","percent.mito","S.Score","G2M.Score")
-    tsne=c(colnames(metadata),"Phase")
-    if(input$category =="clust"){
-      TSNEPlot(object = scrna,group.by = "ident",do.hover = T,no.legend = FALSE,data.hover = c("ident","nUMI", "nGene"),do.label=TRUE)
-    }else if(input$category=="geneexp"){
-      genes=input$gene
-      genes=unlist(strsplit(genes,","))
-      FeaturePlot(object = scrna, features.plot = genes, cols.use = c("grey", "blue"),reduction.use = "tsne",
-                  do.hover = T,no.legend = FALSE,data.hover = c("ident","nUMI", "nGene"))
-    }else if(input$category =="var" & input$var %in% tsne){
-      TSNEPlot(object = scrna,group.by = variable,do.hover = T,no.legend = FALSE,data.hover = variable)
-    }else if(input$category =="var" & input$var %in% feature){
-      FeaturePlot(object = scrna, features.plot = variable, cols.use = c("grey", "blue"),reduction.use = "tsne",do.hover = T,
-                  no.legend = FALSE,data.hover = c("ident","nUMI", "nGene"))
+    tsnea=input$tsnea2
+    tsneb=input$tsneb2
+    feature=c("nGene","nUMI","percent.mito","S.Score","G2M.Score","var.ratio.pca")
+    tsne=c(colnames(metadata),"Phase","sample")
+    if(input$categorya2 =="clust"){
+      plot1=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa2)
+    }else if(input$categorya2=="geneexp"){
+      # genes1=input$gene1
+      # genes1=unlist(strsplit(genes1,","))
+      plot1=FeaturePlot(object = scrna, features.plot = input$gene1a, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa2)
+      plot1=eval(parse(text=paste("plot1$",input$gene1a,sep="")))
+    }else if(input$categorya2 =="var" & input$tsnea2 %in% tsne){
+      plot1=TSNEPlot(object = scrna,group.by = tsnea,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2)
+    }else if(input$categorya2 =="var" & input$tsnea2 %in% feature){
+      plot1=FeaturePlot(object = scrna, features.plot = tsnea, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa2)
+      plot1=eval(parse(text=paste("plot1$",tsnea,sep="")))
     }
+    
+    if(input$categoryb2 =="clust"){
+      plot2=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2)
+    }else if(input$categoryb2=="geneexp"){
+      # genes2=input$gene2
+      # genes2=unlist(strsplit(genes2,","))
+      plot2=FeaturePlot(object = scrna, features.plot = input$gene2a, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa2)
+      plot2=eval(parse(text=paste("plot2$",input$gene2a,sep="")))
+    }else if(input$categoryb2 =="var" & input$tsneb2 %in% tsne){
+      plot2=TSNEPlot(object = scrna,group.by = tsneb,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2)
+    }else if(input$categoryb2 =="var" & input$tsneb2 %in% feature){
+      plot2=FeaturePlot(object = scrna, features.plot = tsneb, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa2)
+      plot2=eval(parse(text=paste("plot2$",tsneb,sep="")))
+    }
+    
+    plot_grid(plot1,plot2)
+
   })
   
-  output$tsneplot = renderPlotly({
-    input$category
-    input$gene
+  output$comptsne2 = renderPlot({
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
-      tsneplot()
+      comptsne2()
     })
   })
-  
-  tsneplot_dwld = reactive({
-    scrna=fileload()
-    pdf(NULL)
-    metadata=as.data.frame(scrna@meta.data)
-    metadata=metadata %>% select(starts_with("var"))
-    variable=input$var
-    feature=c("nGene","nUMI","percent.mito","S.Score","G2M.Score")
-    tsne=c(colnames(metadata),"Phase")
-    if(input$category =="clust"){
-      TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label=TRUE,do.return=TRUE)
-    }else if(input$category=="geneexp"){
-      genes=input$gene
-      genes=unlist(strsplit(genes,","))
-      FeaturePlot(object = scrna, features.plot = genes, cols.use = c("grey", "blue"),reduction.use = "tsne",
-                  no.legend = FALSE,do.return=TRUE)
-    }else if(input$category =="var" & input$var %in% tsne){
-      TSNEPlot(object = scrna,group.by = variable,no.legend = FALSE,do.return=TRUE)
-    }else if(input$category =="var" & input$var %in% feature){
-      FeaturePlot(object = scrna, features.plot = variable, cols.use = c("grey", "blue"),reduction.use = "tsne",
-                  no.legend = FALSE,do.return=TRUE)
-    }
-  })
-  
-  output$downloadPlot <- downloadHandler(
-    filename = function(){
-      paste0('tsneplot','.pdf',sep='')
-    },
-    content = function(file){
-      pdf(file, width = 800, height = 1300)
-      tsneplot_dwld()
-      dev.off()
-    })
+  #get all categorical variables from metadata
+  # output$variables = renderUI({
+  #   scrna=fileload()
+  #   metadata=as.data.frame(scrna@meta.data) %>% dplyr::select(-res.0.6)
+  #   #metadata=metadata %>% select(starts_with("var"))
+  #   var=colnames(metadata)
+  #   selectInput("var","Select a Variable",var,"pick one")
+  # })
+  # 
+  # output$genes = renderUI({
+  #   scrna=fileload()
+  #   genelist=rownames(scrna@scale.data)
+  #   selectizeInput("gene","Enter gene(s)",genelist, selected = "Hopx", multiple = FALSE,options = list(maxItems = 1))
+  # })
+  # 
+  # tsneplot = reactive({
+  #   scrna=fileload()
+  #   pdf(NULL)
+  #   metadata=as.data.frame(scrna@meta.data)
+  #   metadata=metadata %>% select(starts_with("var"))
+  #   variable=input$var
+  #   feature=c("nGene","nUMI","percent.mito","S.Score","G2M.Score")
+  #   tsne=c(colnames(metadata),"Phase","orig.ident","old.ident")
+  #   if(input$category =="clust"){
+  #     TSNEPlot(object = scrna,group.by = "ident",do.hover = T,no.legend = FALSE,data.hover = c("ident","nUMI", "nGene"),do.label=TRUE)
+  #   }else if(input$category=="geneexp"){
+  #     genes=input$gene
+  #     genes=unlist(strsplit(genes,","))
+  #     FeaturePlot(object = scrna, features.plot = genes, cols.use = c("grey", "blue"),reduction.use = "tsne",
+  #                 do.hover = T,no.legend = FALSE,data.hover = c("ident","nUMI", "nGene"))
+  #   }else if(input$category =="var" & input$var %in% tsne){
+  #     TSNEPlot(object = scrna,group.by = variable,do.hover = T,no.legend = FALSE,data.hover = variable)
+  #   }else if(input$category =="var" & input$var %in% feature){
+  #     FeaturePlot(object = scrna, features.plot = variable, cols.use = c("grey", "blue"),reduction.use = "tsne",do.hover = T,
+  #                 no.legend = FALSE,data.hover = c("ident","nUMI", "nGene"))
+  #   }
+  # })
+  # 
+  # output$tsneplot = renderPlotly({
+  #   input$category
+  #   input$gene
+  #   withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+  #     tsneplot()
+  #   })
+  # })
+  # 
+  # tsneplot_dwld = reactive({
+  #   scrna=fileload()
+  #   pdf(NULL)
+  #   metadata=as.data.frame(scrna@meta.data)
+  #   metadata=metadata %>% select(starts_with("var"))
+  #   variable=input$var
+  #   feature=c("nGene","nUMI","percent.mito","S.Score","G2M.Score")
+  #   tsne=c(colnames(metadata),"Phase")
+  #   if(input$category =="clust"){
+  #     TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label=TRUE,do.return=TRUE)
+  #   }else if(input$category=="geneexp"){
+  #     genes=input$gene
+  #     genes=unlist(strsplit(genes,","))
+  #     FeaturePlot(object = scrna, features.plot = genes, cols.use = c("grey", "blue"),reduction.use = "tsne",
+  #                 no.legend = FALSE,do.return=TRUE)
+  #   }else if(input$category =="var" & input$var %in% tsne){
+  #     TSNEPlot(object = scrna,group.by = variable,no.legend = FALSE,do.return=TRUE)
+  #   }else if(input$category =="var" & input$var %in% feature){
+  #     FeaturePlot(object = scrna, features.plot = variable, cols.use = c("grey", "blue"),reduction.use = "tsne",
+  #                 no.legend = FALSE,do.return=TRUE)
+  #   }
+  # })
+  # 
+  # output$downloadPlot <- downloadHandler(
+  #   filename = function(){
+  #     paste0('tsneplot','.pdf',sep='')
+  #   },
+  #   content = function(file){
+  #     pdf(file, width = 800, height = 1300)
+  #     tsneplot_dwld()
+  #     dev.off()
+  #   })
   ###################################################
   ###################################################
   ####### Compare Tsne plots with controls  ##########
@@ -140,7 +200,7 @@ server <- function(input, output,session) {
   ###################################################
   output$tsnea = renderUI({
     scrna=fileload()
-    metadata=as.data.frame(scrna@meta.data) %>% dplyr::select(-orig.ident,-old.ident,-res.0.6)
+    metadata=as.data.frame(scrna@meta.data) %>% dplyr::select(-res.0.6)
     #metadata=metadata %>% select(starts_with("var"))
     var=colnames(metadata)
     selectInput("tsnea","Select a Variable",var,"pick one")
@@ -148,7 +208,7 @@ server <- function(input, output,session) {
   
   output$tsneb = renderUI({
     scrna=fileload()
-    metadata=as.data.frame(scrna@meta.data) %>% dplyr::select(-orig.ident,-old.ident,-res.0.6)
+    metadata=as.data.frame(scrna@meta.data) %>% dplyr::select(-res.0.6)
     #metadata=metadata %>% select(starts_with("var"))
     var=colnames(metadata)
     selectInput("tsneb","Select a Variable",var,"pick one")
@@ -160,15 +220,15 @@ server <- function(input, output,session) {
     metadata=metadata %>% select(starts_with("var"))
     tsnea=input$tsnea
     tsneb=input$tsneb
-    feature=c("nGene","nUMI","percent.mito","S.Score","G2M.Score")
-    tsne=c(colnames(metadata),"Phase")
+    feature=c("nGene","nUMI","percent.mito","S.Score","G2M.Score","var.ratio.pca")
+    tsne=c(colnames(metadata),"Phase","sample")
     if(input$categorya =="clust"){
       plot1=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa)
-    }else if(input$categorya=="geneexp"){
-      # genes1=input$gene1
-      # genes1=unlist(strsplit(genes1,","))
-      plot1=FeaturePlot(object = scrna, features.plot = input$gene1, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa)
-      plot1=eval(parse(text=paste("plot1$",input$gene1,sep="")))
+    # }else if(input$categorya=="geneexp"){
+    #   # genes1=input$gene1
+    #   # genes1=unlist(strsplit(genes1,","))
+    #   plot1=FeaturePlot(object = scrna, features.plot = input$gene1, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa)
+    #   plot1=eval(parse(text=paste("plot1$",input$gene1,sep="")))
     }else if(input$categorya =="var" & input$tsnea %in% tsne){
       plot1=TSNEPlot(object = scrna,group.by = tsnea,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa)
     }else if(input$categorya =="var" & input$tsnea %in% feature){
@@ -176,25 +236,41 @@ server <- function(input, output,session) {
       plot1=eval(parse(text=paste("plot1$",tsnea,sep="")))
     }
 
-    if(input$categoryb =="clust"){
-      plot2=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointb)
-    }else if(input$categoryb=="geneexp"){
-      # genes2=input$gene2
-      # genes2=unlist(strsplit(genes2,","))
-      plot2=FeaturePlot(object = scrna, features.plot = input$gene2, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointb)
-      plot2=eval(parse(text=paste("plot2$",input$gene2,sep="")))
-    }else if(input$categoryb =="var" & input$tsneb %in% tsne){
-      plot2=TSNEPlot(object = scrna,group.by = tsneb,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointb)
-    }else if(input$categoryb =="var" & input$tsneb %in% feature){
-      plot2=FeaturePlot(object = scrna, features.plot = tsneb, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointb)
-      plot2=eval(parse(text=paste("plot2$",tsneb,sep="")))
-    }
-
-    plot_grid(plot1,plot2)
+    # if(input$categoryb == "selectftab"){
+    #   markers=markergenes()
+    #   s=input$markergenes_rows_selected # get  index of selected row from table
+    #   markers=markers[s, ,drop=FALSE]
+    #   plot2=FeaturePlot(object = scrna, features.plot = rownames(markers), cols.use = c("grey","blue"),reduction.use = "tsne",
+    #                     no.legend = FALSE,pt.size = input$pointa,do.return = T)
+    #   plot2=eval(parse(text=paste("plot2$",rownames(markers),sep="")))
+    # }else if(input$categoryb =="clust"){
+    #   plot2=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa)
+    # }else if(input$categoryb=="geneexp"){
+    #   # genes2=input$gene2
+    #   # genes2=unlist(strsplit(genes2,","))
+    #   plot2=FeaturePlot(object = scrna, features.plot = input$gene2, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa)
+    #   plot2=eval(parse(text=paste("plot2$",input$gene2,sep="")))
+    # }else if(input$categoryb =="var" & input$tsneb %in% tsne){
+    #   plot2=TSNEPlot(object = scrna,group.by = tsneb,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa)
+    # }else if(input$categoryb =="var" & input$tsneb %in% feature){
+    #   plot2=FeaturePlot(object = scrna, features.plot = tsneb, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa)
+    #   plot2=eval(parse(text=paste("plot2$",tsneb,sep="")))
+    # }
     
-    # tsnea<- TSNEPlot(object = scrna,do.label = TRUE, do.return=T,label.size = 3)
-    # tsneb<- FeaturePlot(object = scrna, features.plot ="nUMI", cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T)
-    # plot_grid(tsnea,tsneb$nUMI)
+    markers=markergenes()
+      s=input$markergenes_rows_selected # get  index of selected row from table
+      markers=markers[s, ,drop=FALSE]
+      plot2=FeaturePlot(object = scrna, features.plot = rownames(markers), cols.use = c("grey","blue"),reduction.use = "tsne",
+                        no.legend = FALSE,pt.size = input$pointa,do.return = T)
+      plot2=eval(parse(text=paste("plot2$",rownames(markers),sep="")))
+    
+      plot3=VlnPlot(object = scrna, features.plot = rownames(markers),group.by = input$grptype,do.return = T)
+      plot4=RidgePlot(object = scrna, features.plot = rownames(markers),group.by = input$grptype,do.return = T)
+      
+    
+      row1=plot_grid(plot1,plot2,align = 'h', rel_heights = c(1, 1),axis="lr", nrow=1)
+      row1=plot_grid(plot3,plot4,align = 'h', rel_heights = c(1, 1),axis="lr", nrow=1)
+    plot_grid(row1,row2,align = 'v', rel_heights = c(1.7, 1),axis="tb",ncol=1)
 
   })
   
@@ -261,65 +337,13 @@ server <- function(input, output,session) {
                   rownames=TRUE,selection = list(mode = 'single', selected =1),escape=FALSE)
   })
   
-  ###################################################
-  ###################################################
-  ####### Display feature plot with controls  #######
-  ###################################################
-  ###################################################
-  
-  output$markergenes_out = DT::renderDataTable({
-    input$identa
-    input$identb
-    DT::datatable(markergenes(),
-                  extensions = 'Buttons', options = list(
-                    dom = 'Bfrtip',
-                    buttons = list()),
-                  rownames=TRUE,selection = list(mode = 'single', selected =1),escape=FALSE)
-  })
-  
-  markgeneplot <- reactive({
-    withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
-      scrna=fileload()
-      markers=markergenes()
-      s=input$markergenes_out_rows_selected # get  index of selected row from table
-      markers=markers[s, ,drop=FALSE]
-      FeaturePlot(object = scrna, features.plot = rownames(markers), cols.use = c("grey","blue"),reduction.use = "tsne",
-                  no.legend = FALSE,pt.size = input$marker_pointsize,do.return = T)
-    })
-  })
-  
-  # markgeneplot <- reactive({
-  #   withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
-  #     scrna=fileload()
-  #     markers=markergenes()
-  #     FeaturePlot(object = scrna, features.plot = rownames(markers)[1:input$cowplot], cols.use = c("grey","blue"),reduction.use = "tsne",
-  #                 no.legend = FALSE,pt.size = input$marker_pointsize)
-  #   })
-  # })
-  
-  output$markgeneplot <- renderPlot({
-    withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
-      markgeneplot()
-    })
-  })
-  
   output$downloaddeg <- downloadHandler(
     filename = function() { paste(input$projects, '.csv', sep='') },
     content = function(file) {
       write.csv(markergenes(), file)
     })
-  
-  output$dwldfeature <- downloadHandler(
-    filename = function(){
-      paste0('featureplot','.jpg',sep='')
-    },
-    content = function(file){
-      jpeg(file, quality = 100, width = 800, height = 1300)
-      markgeneplot()
-      dev.off()
-    })
-  
-  ###################################################
+
+   ###################################################
   ###################################################
   ####### Display Violin  plot with controls  #######
   ###################################################
@@ -330,23 +354,23 @@ server <- function(input, output,session) {
     metadata=as.data.frame(scrna@meta.data)
     metadata=metadata %>% select(starts_with("var"))
     var=c("ident",colnames(metadata))
-    selectInput("grptype","Select a Variable",var,"pick one")
+    selectInput("grptype","Select a Variable group the Violin Plot",var,"pick one")
     })
   })
   
-   violinplot <- reactive({
-    withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
-      scrna=fileload()
-      markers=markergenes()
-      VlnPlot(object = scrna, features.plot = rownames(markers)[1:input$vplot],group.by = input$grptype,do.return = T)
-    })
-  })
-  
-   output$violinplot <- renderPlot({
-     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
-       violinplot()
-     })
-   })
+  #  violinplot <- reactive({
+  #   withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+  #     scrna=fileload()
+  #     markers=markergenes()
+  #     VlnPlot(object = scrna, features.plot = rownames(markers)[1:input$vplot],group.by = input$grptype,do.return = T)
+  #   })
+  # })
+  # 
+  #  output$violinplot <- renderPlot({
+  #    withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+  #      violinplot()
+  #    })
+  #  })
   ###################################################
   ###################################################
   ####### Display Heatmap plot with controls  #######
