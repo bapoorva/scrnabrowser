@@ -73,16 +73,17 @@ server <- function(input, output,session) {
   comptsne2 = reactive({
     scrna=fileload()
     metadata=as.data.frame(scrna@meta.data)
-    metadata=metadata %>% select(starts_with("var"))
+    met= sapply(metadata,is.numeric)
+    #metadata=metadata %>% select(starts_with("var"))
     tsnea=input$tsnea2
     tsneb=input$tsneb2
-    feature=c("nGene","nUMI","percent.mito","S.Score","G2M.Score","var.ratio.pca")
-    tsne=c(colnames(metadata),"Phase","sample")
+    feature=names(met[met==TRUE])
+    #feature=c("nGene","nUMI","percent.mito","S.Score","G2M.Score","var.ratio.pca")
+    tsne=names(met[met==FALSE])
+    #tsne=c(colnames(metadata),"Phase","sample")
     if(input$categorya2 =="clust"){
       plot1=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa2)
     }else if(input$categorya2=="geneexp"){
-      # genes1=input$gene1
-      # genes1=unlist(strsplit(genes1,","))
       plot1=FeaturePlot(object = scrna, features.plot = input$gene1a, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa2)
       plot1=eval(parse(text=paste("plot1$",input$gene1a,sep="")))
     }else if(input$categorya2 =="var" & input$tsnea2 %in% tsne){
@@ -95,8 +96,6 @@ server <- function(input, output,session) {
     if(input$categoryb2 =="clust"){
       plot2=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2)
     }else if(input$categoryb2=="geneexp"){
-      # genes2=input$gene2
-      # genes2=unlist(strsplit(genes2,","))
       plot2=FeaturePlot(object = scrna, features.plot = input$gene2a, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa2)
       plot2=eval(parse(text=paste("plot2$",input$gene2a,sep="")))
     }else if(input$categoryb2 =="var" & input$tsneb2 %in% tsne){
@@ -140,11 +139,14 @@ server <- function(input, output,session) {
   comptsne = reactive({
     scrna=fileload()
     metadata=as.data.frame(scrna@meta.data)
-    metadata=metadata %>% select(starts_with("var"))
+    met= sapply(metadata,is.numeric)
+    #metadata=metadata %>% select(starts_with("var"))
     tsnea=input$tsnea
     tsneb=input$tsneb
-    feature=c("nGene","nUMI","percent.mito","S.Score","G2M.Score","var.ratio.pca")
-    tsne=c(colnames(metadata),"Phase","sample")
+    feature=names(met[met==TRUE])
+    #feature=c("nGene","nUMI","percent.mito","S.Score","G2M.Score","var.ratio.pca")
+    tsne=names(met[met==FALSE])
+    #tsne=c(colnames(metadata),"Phase","sample")
     if(input$categorya =="clust"){
       plot1=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa)
     }else if(input$categorya =="var" & input$tsnea %in% tsne){
