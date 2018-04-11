@@ -56,7 +56,7 @@ server <- function(input, output,session) {
   ###################################################
   output$tsnea2 = renderUI({
     scrna=fileload()
-    metadata=as.data.frame(scrna@meta.data) %>% dplyr::select(-res.0.6)
+    metadata=as.data.frame(scrna@meta.data) 
     #metadata=metadata %>% select(starts_with("var"))
     var=colnames(metadata)
     selectInput("tsnea2","Select a Variable",var,"pick one")
@@ -64,7 +64,7 @@ server <- function(input, output,session) {
   
   output$tsneb2 = renderUI({
     scrna=fileload()
-    metadata=as.data.frame(scrna@meta.data) %>% dplyr::select(-res.0.6)
+    metadata=as.data.frame(scrna@meta.data) 
     #metadata=metadata %>% select(starts_with("var"))
     var=colnames(metadata)
     selectInput("tsneb2","Select a Variable",var,"pick one")
@@ -122,7 +122,7 @@ server <- function(input, output,session) {
   ###################################################
   output$tsnea = renderUI({
     scrna=fileload()
-    metadata=as.data.frame(scrna@meta.data) %>% dplyr::select(-res.0.6)
+    metadata=as.data.frame(scrna@meta.data) 
     #metadata=metadata %>% select(starts_with("var"))
     var=colnames(metadata)
     selectInput("tsnea","Select a Variable",var,"pick one")
@@ -130,7 +130,7 @@ server <- function(input, output,session) {
   
   output$tsneb = renderUI({
     scrna=fileload()
-    metadata=as.data.frame(scrna@meta.data) %>% dplyr::select(-res.0.6)
+    metadata=as.data.frame(scrna@meta.data) 
     #metadata=metadata %>% select(starts_with("var"))
     var=colnames(metadata)
     selectInput("tsneb","Select a Variable",var,"pick one")
