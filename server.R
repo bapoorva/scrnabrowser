@@ -178,6 +178,14 @@ server <- function(input, output,session) {
       comptsne()
     })
   })
+  
+  output$downloadtsneplot <- downloadHandler(
+    filename = function() {
+      paste0("Compare_tsne.jpg")
+    },
+    content = function(file){
+      ggsave(file, plot = comptsne(), device = "jpg")
+    })
   ###################################################
   ###################################################
   ####### Display Biplot plot with controls #########
@@ -218,12 +226,21 @@ server <- function(input, output,session) {
     scrna=fileload()
     if(input$identb==""){
       markers=FindMarkers(object = scrna, ident.1 = input$identa, min.pct = input$minpct,logfc.threshold=input$lfc,test.use=input$test)
+      geneid=rownames(markers)
+      url= paste("http://www.genecards.org/cgi-bin/carddisp.pl?gene=",geneid,sep = "")
+      markers$GeneID=paste0("<a href='",url,"'target='_blank'>",rownames(markers),"</a>")
+      
     }else{
       identb=input$identb
       p=unlist(strsplit(identb,","))
     markers=FindMarkers(object = scrna, ident.1 = input$identa, ident.2 = p, min.pct = input$minpct,logfc.threshold=input$lfc,test.use=input$test)
+    geneid=rownames(markers)
+    url= paste("http://www.genecards.org/cgi-bin/carddisp.pl?gene=",geneid,sep = "")
+    markers$GeneID=paste0("<a href='",url,"'target='_blank'>",rownames(markers),"</a>")
+    
     }
     })
+    return(markers)
   })
   
   output$markergenes = DT::renderDataTable({

@@ -64,7 +64,8 @@ ui <- dashboardPage(
                     condition = "input.categoryb2 == 'geneexp'",textInput("gene2a", label = "Gene Name",value = "Axin2")
                   )
                   )),
-                plotOutput("comptsne2", height = 600)
+                plotOutput("comptsne2", height = 600),
+                downloadButton('downloadtsneplot', 'Download tSNE plot')
             )
     ),#end of degtab
     ###################################################################################################################################### 
