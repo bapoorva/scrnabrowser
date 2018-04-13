@@ -115,6 +115,13 @@ server <- function(input, output,session) {
     })
   })
   
+  output$downloadtsneplot <- downloadHandler(
+    filename = function() {
+      paste0("Compare_tsne.jpg")
+    },
+    content = function(file){
+      ggsave(file, plot = comptsne2(), device = "jpg")
+    })
   ###################################################
   ###################################################
   ####### Compare Tsne plots with controls  ##########
@@ -179,9 +186,9 @@ server <- function(input, output,session) {
     })
   })
   
-  output$downloadtsneplot <- downloadHandler(
+  output$downloadplot <- downloadHandler(
     filename = function() {
-      paste0("Compare_tsne.jpg")
+      paste0("Plot.jpg")
     },
     content = function(file){
       ggsave(file, plot = comptsne(), device = "jpg")
@@ -258,7 +265,9 @@ server <- function(input, output,session) {
     content = function(file) {
       write.csv(markergenes(), file)
     })
+  
 
+  
    ###################################################
   ###################################################
   ####### Display Violin  plot with controls  #######
@@ -330,5 +339,15 @@ server <- function(input, output,session) {
                  group.label.rot= T, col.low=lowcol, col.mid =midcol ,col.high = highcol,slim.col.label=TRUE)
      })
    })
+   
+   output$downloadheatmap <- downloadHandler(
+     filename = function() {
+       paste0("heatmap.jpg")
+     },
+     content = function(file){
+       jpeg(file, quality = 100, width = 800, height = 800)
+       plot(heatmap())
+       dev.off()
+     })
   
 }#end of server

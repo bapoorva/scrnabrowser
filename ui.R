@@ -76,7 +76,8 @@ ui <- dashboardPage(
                   title = "Controls",solidHeader = TRUE,width=4,status='primary',
                   textInput("bigene_genea", label = "Gene A",value = "Sox2"),
                   textInput("bigene_geneb", label = "Gene B",value = "Sox9"),
-                  sliderInput("bigene_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25)
+                  sliderInput("bigene_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25),
+                  downloadButton('downloadbigene', 'Download bigene plot')
                 )
               )#End FluidRow
       ),#endbigeneplotTab
@@ -101,7 +102,8 @@ ui <- dashboardPage(
                 selectInput("test", "Select test to use",c('Wilcox' = "wilcox",'T-test' = "t", 'Poisson' = "poisson",'Negative Binomial'="negbinom","DESeq2"="DESeq2"),selected = "wilcox"),
                 sliderInput("minpct", "Minimum Percent of cells:",min = 0.1, max = 10, value = 0.25),
                 uiOutput("grptype"),
-                downloadButton('downloaddeg', 'Download table')
+                downloadButton('downloaddeg', 'Download table'),
+                downloadButton('downloadplot', 'Download Plot')
               ),
               box(DT::dataTableOutput('markergenes'),width=12, status='primary',solidHeader = TRUE,title="Marker genes")
             )#End FluidRow
@@ -112,7 +114,8 @@ ui <- dashboardPage(
               title = "Controls",solidHeader = TRUE,width=12,status='primary',
               uiOutput("heatmapgenes"),
               uiOutput("hmpgrp"),
-              selectInput("hmpcol", "Select one",c('PurpleYellow' = "PuYl",'BlueGreen' = "BuGn", 'RedYellow' = "RdYl", 'RedBlue'="RdBu"),selected = "geneexp")
+              selectInput("hmpcol", "Select one",c('PurpleYellow' = "PuYl",'BlueGreen' = "BuGn", 'RedYellow' = "RdYl", 'RedBlue'="RdBu"),selected = "geneexp"),
+              downloadButton('downloadheatmap', 'Download Heatmap')
              ),
             box(plotOutput("heatmap", height = 900),width=12, status='primary',solidHeader = TRUE,title="Single cell heatmap of gene expression")
     )#end of tab
