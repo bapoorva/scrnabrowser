@@ -64,6 +64,18 @@ ui <- dashboardPage(
                     condition = "input.categoryb2 == 'geneexp'",textInput("gene2a", label = "Gene Name",value = "Axin2")
                   )
                   )),
+                fluidRow(
+                  column(6,checkboxInput("subsa", label = "Check to subselect cells", value = FALSE)),
+                  column(6,checkboxInput("subsb", label = "Check to subselect cells", value = FALSE))
+                ),
+                fluidRow(
+                  column(6,conditionalPanel(
+                    condition = "input.subsa ==true",uiOutput("subsaui")
+                  )),
+                  column(6,conditionalPanel(
+                    condition = "input.subsb ==true",uiOutput("subsbui")
+                  )
+                  )),
                 plotOutput("comptsne2", height = 600),
                 downloadButton('downloadtsneplot', 'Download tSNE plot')
             )

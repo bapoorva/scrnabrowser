@@ -70,6 +70,55 @@ server <- function(input, output,session) {
     selectInput("tsneb2","Select a Variable",var,"pick one")
   })
   
+  output$subsaui = renderUI({
+    scrna=fileload()
+    clusts=levels(scrna@ident)
+    if(input$categorya2=="clust"){
+      selectInput("selclust","Select a Cluster",clusts)
+    }else if(input$categorya2=="var"){
+      metadata=as.data.frame(scrna@meta.data)
+      met= sapply(metadata,is.numeric)
+      feature=names(met[met==TRUE])
+      tsne=names(met[met==FALSE])
+      t=paste("scrna@meta.data$",input$tsnea2,sep="")
+      if(input$tsnea2 %in% tsne){
+        opt1=levels(eval(parse(text=t)))
+        selectInput("selclust2","Select one of the options",opt1)
+      }else if(input$tsnea2 %in% feature){
+        min=min(eval(parse(text=t)))
+        max=max(eval(parse(text=t)))
+        sliderInput("tsnea2lim", label = h5("Select Range"), min = min,max =max, value =c(min,max)) 
+      }
+    }else if(input$categorya2=="geneexp"){
+      validate(need(input$categorya2!="geneexp","Cannot subselect gene expression values"))
+    }
+  })
+  
+  output$subsbui = renderUI({
+    scrna=fileload()
+    clusts=levels(scrna@ident)
+    if(input$categoryb2=="clust"){
+      selectInput("selclustb","Select a Cluster",clusts)
+    }else if(input$categoryb2=="var"){
+      metadata=as.data.frame(scrna@meta.data)
+      met= sapply(metadata,is.numeric)
+      feature=names(met[met==TRUE])
+      tsne=names(met[met==FALSE])
+      t=paste("scrna@meta.data$",input$tsneb2,sep="")
+      if(input$tsneb2 %in% tsne){
+        opt2=levels(eval(parse(text=t)))
+        selectInput("selclustb2","Select one of the options",opt2)
+      }else if(input$tsneb2 %in% feature){
+        min=min(eval(parse(text=t)))
+        max=max(eval(parse(text=t)))
+        sliderInput("tsneb2lim", label = h5("Select Range"), min = min,max =max, value =c(min,max)) 
+      }
+    }else if(input$categoryb2=="geneexp"){
+      validate(need(input$categoryb2!="geneexp","Cannot subselect gene expression values"))
+    }
+  })
+
+  
   comptsne2 = reactive({
     scrna=fileload()
     metadata=as.data.frame(scrna@meta.data)
@@ -81,27 +130,51 @@ server <- function(input, output,session) {
     #feature=c("nGene","nUMI","percent.mito","S.Score","G2M.Score","var.ratio.pca")
     tsne=names(met[met==FALSE])
     #tsne=c(colnames(metadata),"Phase","sample")
-    if(input$categorya2 =="clust"){
+    if(input$categorya2 =="clust" & input$subsa==F){
       plot1=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa2)
+    }else if(input$categorya2 =="clust" & input$subsa==TRUE){
+      cells=names(scrna@ident[scrna@ident==input$selclust])
+      plot1=TSNEPlot(object = scrna,cells.use=cells,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa2)
     }else if(input$categorya2=="geneexp"){
       plot1=FeaturePlot(object = scrna, features.plot = input$gene1a, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa2)
       plot1=eval(parse(text=paste("plot1$",input$gene1a,sep="")))
-    }else if(input$categorya2 =="var" & input$tsnea2 %in% tsne){
+    }else if(input$categorya2 =="var" & input$tsnea2 %in% tsne & input$subsa==FALSE){
       plot1=TSNEPlot(object = scrna,group.by = tsnea,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2)
-    }else if(input$categorya2 =="var" & input$tsnea2 %in% feature){
+    }else if(input$categorya2 =="var" & input$tsnea2 %in% tsne & input$subsa==TRUE){
+      t=paste("rownames(scrna@meta.data[scrna@meta.data$",input$tsnea2,"==\"",input$selclust2,"\",])",sep="")
+      cells=eval(parse(text=t))
+      plot1=TSNEPlot(object = scrna,group.by = tsnea,cells.use=cells,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2)
+    }else if(input$categorya2 =="var" & input$tsnea2 %in% feature & input$subsa==FALSE){
       plot1=FeaturePlot(object = scrna, features.plot = tsnea, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa2)
+      plot1=eval(parse(text=paste("plot1$",tsnea,sep="")))
+    }else if(input$categorya2 =="var" & input$tsnea2 %in% feature & input$subsa==TRUE){
+      t=paste('rownames(scrna@meta.data[scrna@meta.data$',input$tsnea2, '>',input$tsnea2lim[1], ' & metadata$',input$tsnea2, '<', input$tsnea2lim[2],',])',sep="")
+      cells=eval(parse(text=t))
+      plot1=FeaturePlot(object = scrna, features.plot = tsnea,cells.use = cells, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa2)
       plot1=eval(parse(text=paste("plot1$",tsnea,sep="")))
     }
     
-    if(input$categoryb2 =="clust"){
+    if(input$categoryb2 =="clust" & input$subsb==F){
       plot2=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2)
+    }else if(input$categoryb2 =="clust" & input$subsb==TRUE){
+      cells=names(scrna@ident[scrna@ident==input$selclustb])
+      plot2=TSNEPlot(object = scrna,cells.use=cells,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa2)
     }else if(input$categoryb2=="geneexp"){
       plot2=FeaturePlot(object = scrna, features.plot = input$gene2a, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa2)
       plot2=eval(parse(text=paste("plot2$",input$gene2a,sep="")))
-    }else if(input$categoryb2 =="var" & input$tsneb2 %in% tsne){
+    }else if(input$categoryb2 =="var" & input$tsneb2 %in% tsne & input$subsb==F){
       plot2=TSNEPlot(object = scrna,group.by = tsneb,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2)
-    }else if(input$categoryb2 =="var" & input$tsneb2 %in% feature){
+    }else if(input$categoryb2 =="var" & input$tsneb2 %in% tsne & input$subsb==TRUE){
+      t=paste("rownames(scrna@meta.data[scrna@meta.data$",input$tsneb2,"==\"",input$selclustb2,"\",])",sep="")
+      cells=eval(parse(text=t))
+      plot2=TSNEPlot(object = scrna,group.by = tsneb,cells.use=cells,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2)
+    }else if(input$categoryb2 =="var" & input$tsneb2 %in% feature & input$subsb==F){
       plot2=FeaturePlot(object = scrna, features.plot = tsneb, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa2)
+      plot2=eval(parse(text=paste("plot2$",tsneb,sep="")))
+    }else if(input$categoryb2 =="var" & input$tsneb2 %in% feature & input$subsb==TRUE){
+      t=paste('rownames(scrna@meta.data[scrna@meta.data$',input$tsneb2, '>',input$tsneb2lim[1], ' & metadata$',input$tsneb2, '<', input$tsneb2lim[2],',])',sep="")
+      cells=eval(parse(text=t))
+      plot2=FeaturePlot(object = scrna, features.plot = tsneb,cells.use = cells, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa2)
       plot2=eval(parse(text=paste("plot2$",tsneb,sep="")))
     }
     
@@ -191,7 +264,7 @@ server <- function(input, output,session) {
       paste0("Plot.jpg")
     },
     content = function(file){
-      ggsave(file, plot = comptsne(), device = "jpg")
+      ggsave(file, plot = comptsne(), device = "jpg", height = 1000 ,width =700 )
     })
   ###################################################
   ###################################################
@@ -345,7 +418,7 @@ server <- function(input, output,session) {
        paste0("heatmap.jpg")
      },
      content = function(file){
-       jpeg(file, quality = 100, width = 800, height = 800)
+       jpeg(file, quality = 100, width = 800, height = 400)
        plot(heatmap())
        dev.off()
      })
