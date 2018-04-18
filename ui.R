@@ -19,8 +19,8 @@ ui <- dashboardPage(
                      uiOutput("projects"),
                      menuItem('Compare tSNE Plots', tabName = 'tsneplot', icon = icon('hand-o-right')),
                      menuItem('Biplot', tabName = 'biplot', icon = icon('hand-o-right')),
-                     menuItem('Differential Expression', tabName = 'mgenes', icon = icon('hand-o-right'),
-                              menuSubItem("Find Marker Genes", tabName = "deg")),
+                     menuItem('Differential Expression', tabName = 'deg', icon = icon('hand-o-right')),
+                              #menuSubItem("Find Marker Genes", tabName = "deg")),
                      #menuItem('Violin Plots', tabName = 'violinplot', icon = icon('hand-o-right')),
                      menuItem('Heatmap', tabName = 'heatmap', icon = icon('hand-o-right'))
                    )#end of sidebar menu
