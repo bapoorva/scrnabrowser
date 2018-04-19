@@ -15,8 +15,6 @@ library(rgl)
 library(rglwidget)
 library(Seurat)
 library(cowplot)
-library(DESeq2)
-
 
 server <- function(input, output,session) {
   
@@ -397,11 +395,19 @@ server <- function(input, output,session) {
     return(p)
   }
 
-  ######################################################################################################
-  ######################################################################################################
-  ####### Display Biplot plot with controls ############################################################
-  ######################################################################################################
-  ######################################################################################################
+  ####################################################
+  ###################################################
+  ########## Set ident to choose markers  ###########
+  ###################################################
+  ###################################################
+  output$setidentlist = renderUI({
+      scrna=fileload()
+      metadata=as.data.frame(scrna@meta.data)
+      metadata=metadata %>% select(starts_with("var_"))
+      var=c(colnames(metadata))
+      selectInput("setidentlist","Choose category to compare",var,"pick one")
+    
+  })
   
   
   
@@ -413,6 +419,10 @@ server <- function(input, output,session) {
   markergenes = reactive({
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
     scrna=fileload()
+    if(input$setident==T){
+      scrna <- SetAllIdent(object = scrna, id = input$setidentlist)
+    }
+    
     if(input$identb==""){
       markers=FindMarkers(object = scrna, ident.1 = input$identa, min.pct = input$minpct,logfc.threshold=input$lfc,test.use=input$test)
       geneid=rownames(markers)
@@ -428,6 +438,7 @@ server <- function(input, output,session) {
     markers$Link=paste0("<a href='",url,"'target='_blank'>",rownames(markers),"</a>")
     
     }
+    
     })
     return(markers)
   })
@@ -450,7 +461,7 @@ server <- function(input, output,session) {
   
 
   
-   ###################################################
+  ####################################################
   ###################################################
   ####### Display Violin  plot with controls  #######
   ###################################################
@@ -459,12 +470,13 @@ server <- function(input, output,session) {
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
     scrna=fileload()
     metadata=as.data.frame(scrna@meta.data)
-    metadata=metadata %>% select(starts_with("var"))
+    metadata=metadata %>% select(starts_with("var_"))
     var=c("ident",colnames(metadata))
-    selectInput("grptype","Select a Variable group the Violin Plot",var,"pick one")
+    selectInput("grptype","Select a Variable to group the Violin Plot",var,"pick one")
     })
   })
-
+  
+  
   ###################################################
   ###################################################
   ####### Display Heatmap plot with controls  #######

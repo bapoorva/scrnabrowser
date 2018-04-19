@@ -128,12 +128,17 @@ ui <- dashboardPage(
                     condition = "input.categorya == 'var'",
                     uiOutput("tsnea")
                   ),
-                sliderInput("pointa", "Point Size:",min = 0, max = 5, value = 1,step=.25),
+                checkboxInput("setident", label = "Check to choose a different category to compare", value = FALSE),
+                conditionalPanel(
+                  condition = "input.setident ==true",uiOutput("setidentlist")
+                ),
+                
                 textInput("identa", label = "First cluster to compare",value = "0"),
                 textInput("identb", label = "Second Cluster(s) to compare", value = "1"),
                 sliderInput("lfc", "Log FC threshold:",min = 0.25, max = 6, value = 0.25,step=.25),
-                selectInput("test", "Select test to use",c('Wilcox' = "wilcox",'T-test' = "t", 'Poisson' = "poisson",'Negative Binomial'="negbinom","DESeq2"="DESeq2"),selected = "wilcox"),
+                selectInput("test", "Select test to use",c('Wilcox' = "wilcox",'T-test' = "t", 'Poisson' = "poisson",'Negative Binomial'="negbinom"),selected = "wilcox"),
                 sliderInput("minpct", "Minimum Percent of cells:",min = 0.1, max = 10, value = 0.25),
+                sliderInput("pointa", "Point Size:",min = 0, max = 5, value = 1,step=.25),
                 uiOutput("grptype"),
                 downloadButton('downloaddeg', 'Download table'),
                 downloadButton('downloadplot', 'Download Plot')
