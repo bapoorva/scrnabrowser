@@ -81,18 +81,39 @@ ui <- dashboardPage(
             )
     ),#end of degtab
     ###################################################################################################################################### 
-      tabItem(tabName = "biplot",
-              fluidRow(
-                box(plotOutput("bigeneplot", height = 600),width=8, status='primary',title = "Bigene Plot",solidHeader = TRUE),
-                box(
-                  title = "Controls",solidHeader = TRUE,width=4,status='primary',
-                  textInput("bigene_genea", label = "Gene A",value = "Sox2"),
-                  textInput("bigene_geneb", label = "Gene B",value = "Sox9"),
-                  sliderInput("bigene_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25),
-                  downloadButton('downloadbigene', 'Download bigene plot')
-                )
-              )#End FluidRow
-      ),#endbigeneplotTab
+      # tabItem(tabName = "biplot",
+      #         fluidRow(
+      #           box(plotOutput("bigeneplot", height = 600),width=8, status='primary',title = "Bigene Plot",solidHeader = TRUE),
+      #           box(
+      #             title = "Controls",solidHeader = TRUE,width=4,status='primary',
+      #             textInput("bigene_genea", label = "Gene A",value = "Sox2"),
+      #             textInput("bigene_geneb", label = "Gene B",value = "Sox9"),
+      #             sliderInput("bigene_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25),
+      #             downloadButton('downloadbigene', 'Download bigene plot')
+      #           )
+      #         )#End FluidRow
+      # ),#endbigeneplotTab
+    
+    tabItem(tabName = "biplot",
+            fluidRow(
+              box(plotOutput("bigeneplot", height = 600),width=8, status='primary',title = "Bigene Plot",solidHeader = TRUE),
+              
+              box(
+                title = "Controls",solidHeader = TRUE,width=4,status='primary',
+                textInput("bigene_genea", label = "Gene A",value = "Sox2"),
+                #sliderInput("bigene_rangea", "Expression Limits Gene A(log2(UMI))",min = 0, max = 10, value = 0.5,step=.25),
+                uiOutput("bigene_rangea"),
+                textInput("bigene_geneb", label = "Gene B",value = "Sox9"),
+                #sliderInput("bigene_rangeb", "Expression Limits Gene B(log2(UMI))",min = 0, max = 10, value = 1.5,step=.25),
+                uiOutput("bigene_rangeb"),
+                sliderInput("bigene_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25)
+                # radioButtons("bigene_imagetype", label = h3("Image Type"),
+                #              choices = list("PNG" = 'png', "PDF" = 'pdf'), 
+                #              selected = 'png'),
+                # downloadButton('downloadbigene', 'Download')
+              )
+            )
+    ),#endbigeneplotTab
     ######################################################################################################################################
     tabItem(tabName = "deg",
             box(title = "Compare tSNE plots",solidHeader = TRUE,width=9,status='primary',
