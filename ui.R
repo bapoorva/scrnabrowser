@@ -133,8 +133,8 @@ ui <- dashboardPage(
                   condition = "input.setident ==true",uiOutput("setidentlist")
                 ),
                 
-                textInput("identa", label = "First cluster to compare",value = "0"),
-                textInput("identb", label = "Second Cluster(s) to compare", value = "1"),
+                uiOutput("identa"),
+                uiOutput("identb"),
                 sliderInput("lfc", "Log FC threshold:",min = 0.25, max = 6, value = 0.25,step=.25),
                 selectInput("test", "Select test to use",c('Wilcox' = "wilcox",'T-test' = "t", 'Poisson' = "poisson",'Negative Binomial'="negbinom"),selected = "wilcox"),
                 sliderInput("minpct", "Minimum Percent of cells:",min = 0.1, max = 10, value = 0.25),

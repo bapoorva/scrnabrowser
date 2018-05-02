@@ -409,6 +409,27 @@ server <- function(input, output,session) {
     
   })
   
+  output$identa = renderUI({
+    scrna=fileload()
+    if(input$setident==T){
+      scrna <- SetAllIdent(object = scrna, id = input$setidentlist)
+      options=unique(scrna@ident)
+    }else{
+      options=as.numeric(levels(scrna@ident))
+    }
+    selectInput("identa", "First cluster to compare",options)
+    })
+  
+    output$identb = renderUI({
+      scrna=fileload()
+      if(input$setident==T){
+        scrna <- SetAllIdent(object = scrna, id = input$setidentlist)
+        options=unique(scrna@ident)
+      }else{
+        options=as.numeric(levels(scrna@ident))
+      }
+        selectInput("identb", "Second cluster to compare",options,selected=options[2])
+    })
   
   
   ###################################################
