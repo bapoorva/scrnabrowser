@@ -610,16 +610,23 @@ server <- function(input, output,session) {
    datasetInput = reactive({
      scrna=fileload()
      tt=rownames(scrna@raw.data)
+     file = read.csv("data/param.csv")
+     org=as.character(file$organism[file$projects==input$projects])
      genes=fread("data/ligrecgenes.txt",header = TRUE)
+     if(org=="human"){
+       genes$genes=toupper(genes$genes)
+     }
      genes2=tt[tt %in% genes$genes]
      my.data=FetchData(scrna,c("ident","nGene",genes2))
      my.data= my.data %>% rename('clust'='ident')
      
-     file = read.csv("data/param.csv")
-     org=as.character(file$organism[file$projects==input$projects])
+     
      rl=read.csv("data/lig-rec.csv")
      if(org=="human"){
        rl= rl %>% dplyr::select(Pair.Name:Receptor.ApprovedSymbol)
+       rl$Pair.Name=toupper(rl$Pair.Name)
+       rl$Ligand.ApprovedSymbol=toupper(rl$Ligand.ApprovedSymbol)
+       rl$Receptor.ApprovedSymbol=toupper(rl$Receptor.ApprovedSymbol)
      }else if(org=="mouse"){
        rl= rl %>% dplyr::select(Mouse_LigandSym:Mouse.Pairs) %>% rename("Pair.Name"="Mouse.Pairs","Ligand.ApprovedSymbol"="Mouse_LigandSym","Receptor.ApprovedSymbol"="Mouse_RecSym")
      }
