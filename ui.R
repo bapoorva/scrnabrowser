@@ -22,10 +22,7 @@ ui <- dashboardPage(
                      menuItem('Differential Expression', tabName = 'deg', icon = icon('hand-o-right')),
                               #menuSubItem("Find Marker Genes", tabName = "deg")),
                      menuItem('Heatmap', tabName = 'heatmap', icon = icon('hand-o-right')),
-                     menuItem('Ligand Receptor Pairs', tabName = 'ligrec2', icon = icon('hand-o-right'),
-                              menuSubItem("Compare clusters", tabName = "ligrec"),
-                              menuSubItem("Compare to other datasets", tabName = "compligrec"),
-                              menuSubItem("Pathway Analysis", tabName = "pathway"))
+                     menuItem('Ligand Receptor Pairs', tabName = 'ligrec', icon = icon('hand-o-right'),badgeLabel = "new", badgeColor = "green")
                    )#end of sidebar menu
   ),#end dashboardSidebar
   
@@ -84,18 +81,6 @@ ui <- dashboardPage(
             )
     ),#end of degtab
     ###################################################################################################################################### 
-      # tabItem(tabName = "biplot",
-      #         fluidRow(
-      #           box(plotOutput("bigeneplot", height = 600),width=8, status='primary',title = "Bigene Plot",solidHeader = TRUE),
-      #           box(
-      #             title = "Controls",solidHeader = TRUE,width=4,status='primary',
-      #             textInput("bigene_genea", label = "Gene A",value = "Sox2"),
-      #             textInput("bigene_geneb", label = "Gene B",value = "Sox9"),
-      #             sliderInput("bigene_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25),
-      #             downloadButton('downloadbigene', 'Download bigene plot')
-      #           )
-      #         )#End FluidRow
-      # ),#endbigeneplotTab
     
     tabItem(tabName = "biplot",
             fluidRow(
@@ -110,10 +95,6 @@ ui <- dashboardPage(
                 #sliderInput("bigene_rangeb", "Expression Limits Gene B(log2(UMI))",min = 0, max = 10, value = 1.5,step=.25),
                 uiOutput("bigene_rangeb"),
                 sliderInput("bigene_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25)
-                # radioButtons("bigene_imagetype", label = h3("Image Type"),
-                #              choices = list("PNG" = 'png', "PDF" = 'pdf'), 
-                #              selected = 'png'),
-                # downloadButton('downloadbigene', 'Download')
               )
             )
     ),#endbigeneplotTab
@@ -190,61 +171,7 @@ ui <- dashboardPage(
               title = "Ligand Receptor pairs",
               DT::dataTableOutput('pairs_res')
             )#end of box
-    ),#end of tabitem
-    ######################################################################
-    ######################################################################
-    tabItem(tabName = "compligrec",
-            box(width = 6, status = "primary",solidHeader = TRUE,title = "Ligand Selection Panel",
-                selectInput("ligand", "Select Experiment type",c('RNA-Seq' = "rna",'Single Cell' = "scrna", 'Microarray' = "microarray")),
-                uiOutput("ligprj"),
-                uiOutput("ligtype"),
-                conditionalPanel(
-                  condition = "input.ligand == 'rna' | input.ligand == 'microarray'" ,
-                  sliderInput("explig", label = "Set Expression threshold", min =6,max = 12, value = 6)),
-                conditionalPanel(
-                  condition = "input.ligand == 'scrna'" ,
-                  sliderInput("ligumi", label = "Set UMI threshold", min =1,max = 25, value = 1),
-                  sliderInput("ligsamp", label = "Set Percent Samples", min =0,max = 100, value = 50)),
-                checkboxInput("liggene", label = "Upload Gene List", value = FALSE),
-                
-                conditionalPanel(
-                  condition = "input.liggene ==true",
-                  fileInput('liggeneli', 'Upload Receptor Genelist',accept=c('text/csv','text/comma-separated-values,text/plain','.txt'))
-                )),
-            box(width = 6, status = "primary",solidHeader = TRUE,title = "Receptor Selection Panel",
-                selectInput("receptor", "Select Experiment type",c('RNA-Seq' = "rna",'Single Cell' = "scrna", 'Microarray' = "microarray")),
-                uiOutput("recprj"),
-                uiOutput("rectype"),
-                conditionalPanel(
-                  condition = "input.receptor == 'rna' | input.receptor == 'microarray'" ,
-                  sliderInput("exprec", label = "Set Expression threshold", min =6,max = 12, value = 6)),
-                conditionalPanel(
-                  condition = "input.receptor == 'scrna'" ,
-                  sliderInput("recumi", label = "Set UMI threshold", min =1,max = 25, value = 1),
-                  sliderInput("recsamp", label = "Set Percent Samples", min =0,max = 100, value = 50)),
-                checkboxInput("recgene", label = "Upload Gene List", value = FALSE),
-                conditionalPanel(
-                  condition = "input.recgene ==true",
-                  fileInput('recgeneli', 'Upload Receptor Genelist',accept=c('text/csv','text/comma-separated-values,text/plain','.txt'))
-                )),
-            box(width = 12, status = "primary",solidHeader = TRUE,title = "Ligand-Receptor pairs",
-                DT::dataTableOutput('ligrecpairs'),uiOutput("dwldtab"))
-    ),#end of tabitem
-    ######################################################################
-    ######################################################################
-    tabItem(tabName = "pathway",
-            box(width = 12, status = "primary",solidHeader = TRUE,title = "Ligand Receptor Pairs",
-                DT::dataTableOutput('rec')
-            ),#end of box
-            box(width = 12, status = "primary",solidHeader = TRUE,title = "KEGG Pathways",
-                DT::dataTableOutput('Keggpaths')
-            ),
-            box(width = 12,height = 12, status = "primary",solidHeader = TRUE,title = "Pathview",
-                plotOutput("plots")
-            )
     )#end of tabitem
-    ######################################################################
-    ######################################################################
     )#end of tabitems
   )#end of dashboard body
 )#end of dashboard page
