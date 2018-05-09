@@ -616,7 +616,7 @@ server <- function(input, output,session) {
      my.data= my.data %>% rename('clust'='ident')
      
      file = read.csv("data/param.csv")
-     org=as.character(file$organism[file$projects=="DF_E15.5_Nkx2.1"])
+     org=as.character(file$organism[file$projects==input$projects])
      rl=read.csv("data/lig-rec.csv")
      if(org=="human"){
        rl= rl %>% dplyr::select(Pair.Name:Receptor.ApprovedSymbol)
