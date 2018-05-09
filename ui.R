@@ -21,8 +21,11 @@ ui <- dashboardPage(
                      menuItem('Biplot', tabName = 'biplot', icon = icon('hand-o-right')),
                      menuItem('Differential Expression', tabName = 'deg', icon = icon('hand-o-right')),
                               #menuSubItem("Find Marker Genes", tabName = "deg")),
-                     #menuItem('Violin Plots', tabName = 'violinplot', icon = icon('hand-o-right')),
-                     menuItem('Heatmap', tabName = 'heatmap', icon = icon('hand-o-right'))
+                     menuItem('Heatmap', tabName = 'heatmap', icon = icon('hand-o-right')),
+                     menuItem('Ligand Receptor Pairs', tabName = 'ligrec2', icon = icon('hand-o-right'),
+                              menuSubItem("Compare clusters", tabName = "ligrec"),
+                              menuSubItem("Compare to other datasets", tabName = "compligrec"),
+                              menuSubItem("Pathway Analysis", tabName = "pathway"))
                    )#end of sidebar menu
   ),#end dashboardSidebar
   
@@ -156,8 +159,92 @@ ui <- dashboardPage(
               downloadButton('downloadheatmap', 'Download Heatmap')
              ),
             box(plotOutput("heatmap", height = 900),width=12, status='primary',solidHeader = TRUE,title="Single cell heatmap of gene expression")
-    )#end of tab
+    ),#end of tab
     ######################################################################################################################################
+    tabItem(tabName = "ligrec",
+            box(width = 10, status = "primary",solidHeader = TRUE,title = "Controls",
+                radioButtons("clust","Select one", c("All clusters"="all","Select Cluster"="clust"),selected = "clust"),
+                radioButtons("gene","Select one", c("All genes"="allgene","Enter Genelist"="genelist"),selected = "allgene"),
+                
+                conditionalPanel(
+                  condition = "input.clust == 'all' && input.gene == 'genelist'" ,
+                  uiOutput("list1"),
+                  uiOutput("list2")
+                ),
+                conditionalPanel(
+                  condition = "input.clust == 'clust' && input.gene == 'allgene'" ,
+                  uiOutput("clust1"),
+                  uiOutput("clust2")
+                ),
+                conditionalPanel(
+                  condition = "input.clust == 'clust' && input.gene == 'genelist'" ,
+                  uiOutput("list1.1"),
+                  uiOutput("list2.1"),
+                  uiOutput("clust1.1"),
+                  uiOutput("clust2.1")
+                )
+            ),
+            
+            box(
+              width = 10, status = "primary",solidHeader = TRUE,
+              title = "Ligand Receptor pairs",
+              DT::dataTableOutput('pairs_res')
+            )#end of box
+    ),#end of tabitem
+    ######################################################################
+    ######################################################################
+    tabItem(tabName = "compligrec",
+            box(width = 6, status = "primary",solidHeader = TRUE,title = "Ligand Selection Panel",
+                selectInput("ligand", "Select Experiment type",c('RNA-Seq' = "rna",'Single Cell' = "scrna", 'Microarray' = "microarray")),
+                uiOutput("ligprj"),
+                uiOutput("ligtype"),
+                conditionalPanel(
+                  condition = "input.ligand == 'rna' | input.ligand == 'microarray'" ,
+                  sliderInput("explig", label = "Set Expression threshold", min =6,max = 12, value = 6)),
+                conditionalPanel(
+                  condition = "input.ligand == 'scrna'" ,
+                  sliderInput("ligumi", label = "Set UMI threshold", min =1,max = 25, value = 1),
+                  sliderInput("ligsamp", label = "Set Percent Samples", min =0,max = 100, value = 50)),
+                checkboxInput("liggene", label = "Upload Gene List", value = FALSE),
+                
+                conditionalPanel(
+                  condition = "input.liggene ==true",
+                  fileInput('liggeneli', 'Upload Receptor Genelist',accept=c('text/csv','text/comma-separated-values,text/plain','.txt'))
+                )),
+            box(width = 6, status = "primary",solidHeader = TRUE,title = "Receptor Selection Panel",
+                selectInput("receptor", "Select Experiment type",c('RNA-Seq' = "rna",'Single Cell' = "scrna", 'Microarray' = "microarray")),
+                uiOutput("recprj"),
+                uiOutput("rectype"),
+                conditionalPanel(
+                  condition = "input.receptor == 'rna' | input.receptor == 'microarray'" ,
+                  sliderInput("exprec", label = "Set Expression threshold", min =6,max = 12, value = 6)),
+                conditionalPanel(
+                  condition = "input.receptor == 'scrna'" ,
+                  sliderInput("recumi", label = "Set UMI threshold", min =1,max = 25, value = 1),
+                  sliderInput("recsamp", label = "Set Percent Samples", min =0,max = 100, value = 50)),
+                checkboxInput("recgene", label = "Upload Gene List", value = FALSE),
+                conditionalPanel(
+                  condition = "input.recgene ==true",
+                  fileInput('recgeneli', 'Upload Receptor Genelist',accept=c('text/csv','text/comma-separated-values,text/plain','.txt'))
+                )),
+            box(width = 12, status = "primary",solidHeader = TRUE,title = "Ligand-Receptor pairs",
+                DT::dataTableOutput('ligrecpairs'),uiOutput("dwldtab"))
+    ),#end of tabitem
+    ######################################################################
+    ######################################################################
+    tabItem(tabName = "pathway",
+            box(width = 12, status = "primary",solidHeader = TRUE,title = "Ligand Receptor Pairs",
+                DT::dataTableOutput('rec')
+            ),#end of box
+            box(width = 12, status = "primary",solidHeader = TRUE,title = "KEGG Pathways",
+                DT::dataTableOutput('Keggpaths')
+            ),
+            box(width = 12,height = 12, status = "primary",solidHeader = TRUE,title = "Pathview",
+                plotOutput("plots")
+            )
+    )#end of tabitem
+    ######################################################################
+    ######################################################################
     )#end of tabitems
   )#end of dashboard body
 )#end of dashboard page
