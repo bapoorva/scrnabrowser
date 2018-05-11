@@ -227,7 +227,7 @@ server <- function(input, output,session) {
     tsne=names(met[met==FALSE])
     #tsne=c(colnames(metadata),"Phase","sample")
     if(input$categorya =="clust"){
-      plot1=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa)
+      plot1=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa) + theme(legend.position="bottom")
     }else if(input$categorya =="var" & input$tsnea %in% tsne){
       plot1=TSNEPlot(object = scrna,group.by = tsnea,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa)
     }else if(input$categorya =="var" & input$tsnea %in% feature){
@@ -242,8 +242,8 @@ server <- function(input, output,session) {
                         no.legend = FALSE,pt.size = input$pointa,do.return = T)
       plot2=eval(parse(text=paste("plot2$",rownames(markers),sep="")))
     
-      plot3=VlnPlot(object = scrna, features.plot = rownames(markers),group.by = input$grptype,do.return = T)
-      plot4=RidgePlot(object = scrna, features.plot = rownames(markers),group.by = input$grptype,do.return = T)
+      plot3=VlnPlot(object = scrna, features.plot = rownames(markers),group.by = input$grptype,do.return = T,x.lab.rot=TRUE)
+      plot4=RidgePlot(object = scrna, features.plot = rownames(markers),group.by = input$grptype,do.return = T,x.lab.rot=TRUE)
       
     
       row1=plot_grid(plot1,plot2,align = 'h', rel_heights = c(1, 1),axis="lr", nrow=1)
