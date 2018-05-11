@@ -112,13 +112,14 @@ ui <- dashboardPage(
                     condition = "input.categorya == 'var'",
                     uiOutput("tsnea")
                   ),
+                uiOutput("identdef"),
                 checkboxInput("setident", label = "Check to choose a different category to compare", value = FALSE),
                 conditionalPanel(
-                  condition = "input.setident ==true",uiOutput("setidentlist")
+                  condition = "input.setident ==true",uiOutput("setidentlist"),
+                  uiOutput("identa"),
+                  uiOutput("identb")
                 ),
                 
-                uiOutput("identa"),
-                uiOutput("identb"),
                 sliderInput("lfc", "Log FC threshold:",min = 0.25, max = 6, value = 0.25,step=.25),
                 selectInput("test", "Select test to use",c('Wilcox' = "wilcox",'T-test' = "t", 'Poisson' = "poisson",'Negative Binomial'="negbinom"),selected = "wilcox"),
                 sliderInput("minpct", "Minimum Percent of cells:",min = 0.1, max = 10, value = 0.25),

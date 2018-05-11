@@ -265,35 +265,7 @@ server <- function(input, output,session) {
     content = function(file){
       ggsave(file, plot = comptsne(), device = "jpg", height = 1000 ,width =700 )
     })
-  ###################################################
-  ###################################################
-  ####### Display Biplot plot with controls #########
-  ###################################################
-  ###################################################
-  
-  # bigeneplot <- reactive({
-  #   withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
-  #     scrna=fileload()
-  #     FeaturePlot(object = scrna, features.plot = c(input$bigene_genea,input$bigene_geneb), cols.use = c("grey","red","blue","green"),reduction.use = "tsne",
-  #                 no.legend = FALSE,overlay=TRUE,pt.size = input$bigene_pointsize,do.return = T)
-  #   })
-  # })
-  # 
-  # output$bigeneplot <- renderPlot({
-  #   withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
-  #   bigeneplot()
-  #   })
-  # })
-  # 
-  # output$downloadbigene <- downloadHandler(
-  #   filename = function(){
-  #     paste0('biplot','.jpg',sep='')
-  #   },
-  #   content = function(file){
-  #     jpeg(file, quality = 100, width = 800, height = 1300)
-  #     plot(bigeneplot())
-  #     dev.off()
-  #   })
+
   ######################################################################################################
   ######################################################################################################
   ####### Display Biplot plot with controls ############################################################
@@ -409,13 +381,19 @@ server <- function(input, output,session) {
     
   })
   
+  output$identdef = renderUI({
+    scrna=fileload()
+    options=names(scrna@misc)
+    selectInput("identdef", "First cluster/variable of comparison",options)
+  })
+  
   output$identa = renderUI({
     scrna=fileload()
     if(input$setident==T){
       scrna <- SetAllIdent(object = scrna, id = input$setidentlist)
       options=unique(scrna@ident)
     }else{
-      options=as.numeric(levels(scrna@ident))
+      options=levels(scrna@ident)
     }
     selectInput("identa", "First cluster to compare",options)
     })
@@ -426,7 +404,7 @@ server <- function(input, output,session) {
         scrna <- SetAllIdent(object = scrna, id = input$setidentlist)
         options=unique(scrna@ident)
       }else{
-        options=as.numeric(levels(scrna@ident))
+        options=levels(scrna@ident)
       }
         selectInput("identb", "Second cluster to compare",options,selected=options[2])
     })
@@ -440,16 +418,15 @@ server <- function(input, output,session) {
   markergenes = reactive({
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
     scrna=fileload()
+    
     if(input$setident==T){
       scrna <- SetAllIdent(object = scrna, id = input$setidentlist)
-    }
     
     if(input$identb==""){
       markers=FindMarkers(object = scrna, ident.1 = input$identa, min.pct = input$minpct,logfc.threshold=input$lfc,test.use=input$test)
       geneid=rownames(markers)
       url= paste("http://www.genecards.org/cgi-bin/carddisp.pl?gene=",geneid,sep = "")
       markers$Link=paste0("<a href='",url,"'target='_blank'>",rownames(markers),"</a>")
-      
     }else{
       identb=input$identb
       p=unlist(strsplit(identb,","))
@@ -457,7 +434,10 @@ server <- function(input, output,session) {
     geneid=rownames(markers)
     url= paste("http://www.genecards.org/cgi-bin/carddisp.pl?gene=",geneid,sep = "")
     markers$Link=paste0("<a href='",url,"'target='_blank'>",rownames(markers),"</a>")
-    
+    }
+    }
+    if(input$setident==F){
+      markers=eval(parse(text=paste("scrna@misc$",input$identdef,sep="")))
     }
     
     })
