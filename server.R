@@ -437,7 +437,7 @@ server <- function(input, output,session) {
     }
     }
     if(input$setident==F){
-      markers=eval(parse(text=paste("scrna@misc$",input$identdef,sep="")))
+      markers=eval(parse(text=paste("scrna@misc$`",input$identdef,"`",sep="")))
     }
     
     })
