@@ -232,7 +232,7 @@ server <- function(input, output,session) {
       plot1=TSNEPlot(object = scrna,group.by = tsnea,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa)
     }else if(input$categorya =="var" & input$tsnea %in% feature){
       plot1=FeaturePlot(object = scrna, features.plot = tsnea, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa)
-      plot1=eval(parse(text=paste("plot1$",tsnea,sep="")))
+      plot1=eval(parse(text=paste("plot1$`",tsnea,"`",sep="")))
     }
 
     markers=markergenes()
