@@ -559,11 +559,19 @@ server <- function(input, output,session) {
    })
    
    output$clust1 <- renderUI({
-     selectInput("clust1","Pick cluster1",c(0:11),selected=1)
+     withProgress(session = session, message = 'Loading...',detail = 'Please Wait...',{
+     scrna=fileload()
+     options=levels(scrna@ident)
+     selectInput("clust1","Pick cluster1",options,selected=options[1])
+     })
    })
    
    output$clust2 <- renderUI({
-     selectInput("clust2","Pick cluster2",c(0:11),selected=2)
+     withProgress(session = session, message = 'Loading...',detail = 'Please Wait...',{
+     scrna=fileload()
+     options=levels(scrna@ident)
+     selectInput("clust2","Pick cluster2",options, selected=options[2])
+     })
    })
    
    output$list1.1 <- renderUI({
@@ -575,11 +583,19 @@ server <- function(input, output,session) {
    })
    
    output$clust1.1 <- renderUI({
-     selectInput("clust1.1","Pick cluster1",c(0:11),selected=1)
+     withProgress(session = session, message = 'Loading...',detail = 'Please Wait...',{
+     scrna=fileload()
+     options=levels(scrna@ident)
+     selectInput("clust1.1","Pick cluster1",options,selected=options[1])
+     })
    })
    
    output$clust2.1 <- renderUI({
-     selectInput("clust2.1","Pick cluster2",c(0:11),selected=2)
+     withProgress(session = session, message = 'Loading...',detail = 'Please Wait...',{
+     scrna=fileload()
+     options=levels(scrna@ident)
+     selectInput("clust2.1","Pick cluster2",options,selected=options[2])
+     })
    })
    ###################################################
    ###################################################
@@ -612,12 +628,12 @@ server <- function(input, output,session) {
      }
      result=data.frame()
      res=data.frame()
-     for(i in 0:(length(unique(my.data$clust))-1)){
-       for(j in 0:(length(unique(my.data$clust))-1)){
+     for(i in 1:(length(unique(my.data$clust)))){
+       for(j in 1:(length(unique(my.data$clust)))){
          if(i!=j){
-           test=my.data[my.data$clust==i | my.data$clust==j,]
-           R_c1=test[test$clust==i ,(colnames(test) %in% rl$Receptor.ApprovedSymbol)]
-           L_c2=test[test$clust==j , (colnames(test) %in% rl$Ligand.ApprovedSymbol)]
+           test=my.data[my.data$clust==levels(my.data$clust)[i] | my.data$clust==levels(my.data$clust)[j],]
+           R_c1=test[test$clust==levels(my.data$clust)[i] ,(colnames(test) %in% rl$Receptor.ApprovedSymbol)]
+           L_c2=test[test$clust==levels(my.data$clust)[j] , (colnames(test) %in% rl$Ligand.ApprovedSymbol)]
            keep1 = colSums(R_c1>1)>=.5*dim(R_c1)[1]
            keep2 = colSums(L_c2>1)>=.5*dim(L_c2)[1]
            
@@ -628,8 +644,8 @@ server <- function(input, output,session) {
          }
          else{}
          if(nrow(res)!=0){
-           res$Receptor_cluster=i
-           res$Lig_cluster=j
+           res$Receptor_cluster=levels(my.data$clust)[i]
+           res$Lig_cluster=levels(my.data$clust)[j]
            result=rbind(result,res)
          }else{result=result}
        }
