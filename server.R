@@ -416,6 +416,7 @@ server <- function(input, output,session) {
   ###################################################
   ###################################################
   markergenes = reactive({
+    #validate(need(input$click==T,"Make your selections and click on the 'Click to find Marker' genes button"))
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
     scrna=fileload()
     
@@ -450,8 +451,11 @@ server <- function(input, output,session) {
     DT::datatable(markergenes(),
                   extensions = 'Buttons', options = list(
                     dom = 'Bfrtip',
+                    pageLength = 10,
+                    lengthMenu = list(c(30, 50, 100, 150, 200, -1), c('30', '50', '100', '150', '200', 'All')),
                     buttons = list()),
                   rownames=TRUE,selection = list(mode = 'single', selected =1),escape=FALSE)
+   
   })
   
   output$downloaddeg <- downloadHandler(
@@ -602,6 +606,21 @@ server <- function(input, output,session) {
    #### Load lig-receptor list and display results ###
    ###################################################
    ###################################################
+   output$source <- renderUI({
+     file = read.csv("data/param.csv")
+     org=as.character(file$organism[file$projects==input$projects])
+     if(org=="mouse"){rl=read.csv("data/Mm_PairsLigRec.csv")}else if(org=="human"){rl=read.csv("data/Hs_PairsLigRec.csv")}
+     options=as.character(unique(rl$Pair.Source))
+     checkboxGroupInput('source', label='Select source(s)',choices=options,selected=options[1])
+   })
+   
+   output$evidence <- renderUI({
+     file = read.csv("data/param.csv")
+     org=as.character(file$organism[file$projects==input$projects])
+     if(org=="mouse"){rl=read.csv("data/Mm_PairsLigRec.csv")}else if(org=="human"){rl=read.csv("data/Hs_PairsLigRec.csv")}
+     options=as.character(unique(rl$Pair.Evidence))
+     checkboxGroupInput('evidence',label='Select Evidence(s)',choices=options,selected=options[1])
+   })
    
    datasetInput = reactive({
      scrna=fileload()
@@ -616,30 +635,21 @@ server <- function(input, output,session) {
      my.data=FetchData(scrna,c("ident","nGene",genes2))
      my.data= my.data %>% rename('clust'='ident')
      
-     
-     rl=read.csv("data/lig-rec.csv")
-     if(org=="human"){
-       rl= rl %>% dplyr::select(Pair.Name:Receptor.ApprovedSymbol)
-       rl$Pair.Name=toupper(rl$Pair.Name)
-       rl$Ligand.ApprovedSymbol=toupper(rl$Ligand.ApprovedSymbol)
-       rl$Receptor.ApprovedSymbol=toupper(rl$Receptor.ApprovedSymbol)
-     }else if(org=="mouse"){
-       rl= rl %>% dplyr::select(Mouse_LigandSym:Mouse.Pairs) %>% rename("Pair.Name"="Mouse.Pairs","Ligand.ApprovedSymbol"="Mouse_LigandSym","Receptor.ApprovedSymbol"="Mouse_RecSym")
-     }
+     if(org=="mouse"){rl=read.csv("data/Mm_PairsLigRec.csv")}else if(org=="human"){rl=read.csv("data/Hs_PairsLigRec.csv")}
      result=data.frame()
      res=data.frame()
      for(i in 1:(length(unique(my.data$clust)))){
        for(j in 1:(length(unique(my.data$clust)))){
          if(i!=j){
            test=my.data[my.data$clust==levels(my.data$clust)[i] | my.data$clust==levels(my.data$clust)[j],]
-           R_c1=test[test$clust==levels(my.data$clust)[i] ,(colnames(test) %in% rl$Receptor.ApprovedSymbol)]
-           L_c2=test[test$clust==levels(my.data$clust)[j] , (colnames(test) %in% rl$Ligand.ApprovedSymbol)]
+           R_c1=test[test$clust==levels(my.data$clust)[i] ,(colnames(test) %in% rl$receptor)]
+           L_c2=test[test$clust==levels(my.data$clust)[j] , (colnames(test) %in% rl$ligand)]
            keep1 = colSums(R_c1>1)>=.5*dim(R_c1)[1]
            keep2 = colSums(L_c2>1)>=.5*dim(L_c2)[1]
            
            R_c1=R_c1[,keep1]
            L_c2=L_c2[,keep2]
-           res=rl[(rl$Ligand.ApprovedSymbol %in% colnames(L_c2)) & (rl$Receptor.ApprovedSymbol %in% colnames(R_c1)),]
+           res=rl[(rl$ligand %in% colnames(L_c2)) & (rl$receptor %in% colnames(R_c1)),]
            
          }
          else{}
@@ -651,7 +661,11 @@ server <- function(input, output,session) {
        }
      }
      result=result[result$Receptor_cluster!=result$Lig_cluster,]
-     
+     return(result)
+   })
+   
+   finalres= reactive({
+     result=datasetInput()
      if(input$clust=="clust" & input$gene=="allgene"){
        clusters=c(input$clust1,input$clust2)
        result=result[(result$Receptor_cluster %in% clusters) & (result$Lig_cluster%in% clusters),]
@@ -681,10 +695,12 @@ server <- function(input, output,session) {
        g2=as.vector(genes2$V1)
        g2=tolower(g2)
        g2=firstup(g2)
-       result=result[(result$Receptor.ApprovedSymbol %in% g1) & (result$Ligand.ApprovedSymbol %in% g2),]
+       result=result[(result$receptor %in% g1) & (result$ligand %in% g2),]
      }else{
        result=result
      }
+     if(input$checksource==T){result=result[result$Pair.Source %in% input$source,]}
+     if(input$checkevi==T){result=result[result$Pair.Evidence %in% input$evidence,]}
      return(result)
    })
    
@@ -695,7 +711,7 @@ server <- function(input, output,session) {
      input$genelist1
      input$genelist2
      withProgress(session = session, message = 'Loading...',detail = 'Please Wait...',{
-       DT::datatable(datasetInput(),
+       DT::datatable(finalres(),
                      extensions = c('Buttons','Scroller'),
                      options = list(dom = 'Bfrtip',
                                     searchHighlight = TRUE,
