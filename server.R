@@ -203,8 +203,8 @@ server <- function(input, output,session) {
     scrna=fileload()
     metadata=as.data.frame(scrna@meta.data) 
     #metadata=metadata %>% select(starts_with("var"))
-    var=colnames(metadata)
-    selectInput("tsnea","Select a Variable",var,"pick one")
+    var=c(colnames(metadata),'Cell.group')
+    selectInput("tsnea","Select tSNE group to display",var,selected = "Cell.group")
   })
   
   output$tsneb = renderUI({
@@ -219,6 +219,7 @@ server <- function(input, output,session) {
     scrna=fileload()
     metadata=as.data.frame(scrna@meta.data)
     met= sapply(metadata,is.numeric)
+    scrna@meta.data$var_cluster=as.numeric(scrna@meta.data$var_cluster)
     #metadata=metadata %>% select(starts_with("var"))
     tsnea=input$tsnea
     tsneb=input$tsneb
@@ -226,24 +227,22 @@ server <- function(input, output,session) {
     #feature=c("nGene","nUMI","percent.mito","S.Score","G2M.Score","var.ratio.pca")
     tsne=names(met[met==FALSE])
     #tsne=c(colnames(metadata),"Phase","sample")
-    if(input$categorya =="clust"){
+    if(input$tsnea =="Cell.group"){
       plot1=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa) + theme(legend.position="bottom")
-    }else if(input$categorya =="var" & input$tsnea %in% tsne){
+    }else if(input$tsnea %in% tsne){
       plot1=TSNEPlot(object = scrna,group.by = tsnea,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa)
-    }else if(input$categorya =="var" & input$tsnea %in% feature){
+    }else if(input$tsnea %in% feature){
       plot1=FeaturePlot(object = scrna, features.plot = tsnea, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa)
       plot1=eval(parse(text=paste("plot1$`",tsnea,"`",sep="")))
     }
-
     markers=markergenes()
       s=input$markergenes_rows_selected # get  index of selected row from table
       markers=markers[s, ,drop=FALSE]
       plot2=FeaturePlot(object = scrna, features.plot = rownames(markers), cols.use = c("grey","blue"),reduction.use = "tsne",
                         no.legend = FALSE,pt.size = input$pointa,do.return = T)
       plot2=eval(parse(text=paste("plot2$",rownames(markers),sep="")))
-    
-      plot3=VlnPlot(object = scrna, features.plot = rownames(markers),group.by = input$grptype,do.return = T,x.lab.rot=TRUE)
-      plot4=RidgePlot(object = scrna, features.plot = rownames(markers),group.by = input$grptype,do.return = T,x.lab.rot=TRUE)
+      plot3=VlnPlot(object = scrna, features.plot = rownames(markers),group.by = input$setidentlist,do.return = T,x.lab.rot=TRUE)
+      plot4=RidgePlot(object = scrna, features.plot = rownames(markers),group.by = input$setidentlist,do.return = T,x.lab.rot=TRUE)
       
     
       row1=plot_grid(plot1,plot2,align = 'h', rel_heights = c(1, 1),axis="lr", nrow=1)
@@ -466,20 +465,20 @@ server <- function(input, output,session) {
   
 
   
-  ####################################################
-  ###################################################
-  ####### Display Violin  plot with controls  #######
-  ###################################################
-  ###################################################
-  output$grptype = renderUI({
-    withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
-    scrna=fileload()
-    metadata=as.data.frame(scrna@meta.data)
-    metadata=metadata %>% select(starts_with("var_"))
-    var=c("ident",colnames(metadata))
-    selectInput("grptype","Select a Variable to group the Violin Plot",var,"pick one")
-    })
-  })
+  # ####################################################
+  # ###################################################
+  # ####### Display Violin  plot with controls  #######
+  # ###################################################
+  # ###################################################
+  # output$grptype = renderUI({
+  #   withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+  #   scrna=fileload()
+  #   metadata=as.data.frame(scrna@meta.data)
+  #   metadata=metadata %>% select(starts_with("var_"))
+  #   var=c("ident",colnames(metadata))
+  #   selectInput("grptype","Select a Variable to group the Violin Plot",var,"pick one")
+  #   })
+  # })
   
   
   ###################################################
@@ -508,7 +507,7 @@ server <- function(input, output,session) {
      withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
        scrna=fileload()
        metadata=as.data.frame(scrna@meta.data)
-       metadata=metadata %>% select(starts_with("var"))
+       metadata=metadata %>% select(starts_with("var_"))
        var=c("ident",colnames(metadata))
        selectInput("hmpgrp","Select a Variable",var,"pick one")
      })
@@ -562,43 +561,59 @@ server <- function(input, output,session) {
      fileInput('genelist2', 'Upload Ligand Genelist',accept=c('text/csv','text/comma-separated-values,text/plain','.txt'))
    })
    
+   output$pairby <- renderUI({
+     withProgress(session = session, message = 'Loading...',detail = 'Please Wait...',{
+       scrna=fileload()
+       metadata=as.data.frame(scrna@meta.data)
+       metadata=metadata %>% select(starts_with("var_"))
+       options=c("ident",colnames(metadata))
+       selectInput("pairby","Select cell group ",options,selected=options[1])
+     })
+   })
+   
    output$clust1 <- renderUI({
      withProgress(session = session, message = 'Loading...',detail = 'Please Wait...',{
      scrna=fileload()
-     options=levels(scrna@ident)
-     selectInput("clust1","Pick cluster1",options,selected=options[1])
+     t=paste("scrna@meta.data$",input$pairby,sep="")
+     options=unique(eval(parse(text=t)))
+     if(input$pairby=="ident"){options=levels(scrna@ident)}
+     selectInput("clust1","Pick cellgroup for Receptor",options,selected=options[1])
      })
    })
    
    output$clust2 <- renderUI({
      withProgress(session = session, message = 'Loading...',detail = 'Please Wait...',{
      scrna=fileload()
-     options=levels(scrna@ident)
-     selectInput("clust2","Pick cluster2",options, selected=options[2])
+     t=paste("scrna@meta.data$",input$pairby,sep="")
+     options=unique(eval(parse(text=t)))
+     if(input$pairby=="ident"){options=levels(scrna@ident)}
+     selectInput("clust2","Pick cellgroup for Ligand",options, selected=options[2])
      })
    })
    
    output$list1.1 <- renderUI({
-     fileInput('genelist1.1', 'Upload Gene List1',accept=c('text/csv','text/comma-separated-values,text/plain','.txt'))
+     fileInput('genelist1.1', 'Upload Receptor Genelist',accept=c('text/csv','text/comma-separated-values,text/plain','.txt'))
    })
    
    output$list2.1 <- renderUI({
-     fileInput('genelist2.1', 'Upload Gene List2',accept=c('text/csv','text/comma-separated-values,text/plain','.txt'))
+     fileInput('genelist2.1', 'Upload Ligand Genelist',accept=c('text/csv','text/comma-separated-values,text/plain','.txt'))
    })
    
    output$clust1.1 <- renderUI({
      withProgress(session = session, message = 'Loading...',detail = 'Please Wait...',{
      scrna=fileload()
-     options=levels(scrna@ident)
-     selectInput("clust1.1","Pick cluster1",options,selected=options[1])
+     t=paste("scrna@meta.data$",input$pairby2,sep="")
+     options=unique(eval(parse(text=t)))
+     selectInput("clust1.1","Pick cellgroup for Receptor",options,selected=options[1])
      })
    })
    
    output$clust2.1 <- renderUI({
      withProgress(session = session, message = 'Loading...',detail = 'Please Wait...',{
      scrna=fileload()
-     options=levels(scrna@ident)
-     selectInput("clust2.1","Pick cluster2",options,selected=options[2])
+     t=paste("scrna@meta.data$",input$pairby2,sep="")
+     options=unique(eval(parse(text=t)))
+     selectInput("clust2.1","Pick cellgroup for Ligand",options,selected=options[2])
      })
    })
    ###################################################
@@ -624,6 +639,7 @@ server <- function(input, output,session) {
    
    datasetInput = reactive({
      scrna=fileload()
+     #var=input$pairby
      tt=rownames(scrna@raw.data)
      file = read.csv("data/param.csv")
      org=as.character(file$organism[file$projects==input$projects])
@@ -632,8 +648,8 @@ server <- function(input, output,session) {
        genes$genes=toupper(genes$genes)
      }
      genes2=tt[tt %in% genes$genes]
-     my.data=FetchData(scrna,c("ident","nGene",genes2))
-     my.data= my.data %>% rename('clust'='ident')
+     my.data=FetchData(scrna,c(ident,"nGene",genes2))
+     colnames(my.data)[1]= "clust"
      
      if(org=="mouse"){rl=read.csv("data/Mm_PairsLigRec.csv")}else if(org=="human"){rl=read.csv("data/Hs_PairsLigRec.csv")}
      result=data.frame()
@@ -706,12 +722,14 @@ server <- function(input, output,session) {
    
    #print data TABLE
    output$pairs_res = DT::renderDataTable({
+     input$pairby
+     input$pairby2
      input$clust1
      input$clust2
      input$genelist1
      input$genelist2
      withProgress(session = session, message = 'Loading...',detail = 'Please Wait...',{
-       DT::datatable(finalres(),
+       DT::datatable(datasetInput(),
                      extensions = c('Buttons','Scroller'),
                      options = list(dom = 'Bfrtip',
                                     searchHighlight = TRUE,

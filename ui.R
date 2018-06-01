@@ -105,13 +105,15 @@ ui <- dashboardPage(
             ),
 
             fluidRow(
-              box(
-                title = "Controls",solidHeader = TRUE,width=3,status='primary',
-                selectInput("categorya", "Select Category to display",c('Categories' = "var",'Cluster' = "clust"),selected = "clust"),
-                conditionalPanel(
-                    condition = "input.categorya == 'var'",
-                    uiOutput("tsnea")
-                  ),
+              box(title = "Controls",solidHeader = TRUE,width=3,status='primary',
+                uiOutput("tsnea"),
+                sliderInput("pointa", "Point Size:",min = 0, max = 5, value = 1,step=.25),
+                #selectInput("categorya", "Select tSNE group to display",c('Categories' = "var",'Cell group' = "clust"),selected = "clust"),
+                # conditionalPanel(
+                #     condition = "input.categorya == 'var'",
+                #     uiOutput("tsnea")
+                #   ),
+                hr(),
                 uiOutput("identdef"),
                 checkboxInput("setident", label = "Check to choose a different category to compare", value = FALSE),
                 conditionalPanel(
@@ -120,11 +122,10 @@ ui <- dashboardPage(
                   uiOutput("identb")
                 ),
                 actionButton("click","Click to find Marker genes"),
+                hr(),
                 sliderInput("lfc", "Log FC threshold:",min = 0.25, max = 6, value = 0.25,step=.25),
                 selectInput("test", "Select test to use",c('Wilcox' = "wilcox",'T-test' = "t", 'Poisson' = "poisson",'Negative Binomial'="negbinom"),selected = "wilcox"),
                 sliderInput("minpct", "Minimum Percent of cells:",min = 0.1, max = 10, value = 0.25),
-                sliderInput("pointa", "Point Size:",min = 0, max = 5, value = 1,step=.25),
-                uiOutput("grptype"),
                 downloadButton('downloaddeg', 'Download table'),
                 downloadButton('downloadplot', 'Download Plot')
               ),
@@ -144,9 +145,15 @@ ui <- dashboardPage(
     ),#end of tab
     ######################################################################################################################################
     tabItem(tabName = "ligrec",
-            box(width = 10, status = "primary",solidHeader = TRUE,title = "Controls",
-                radioButtons("clust","Select one", c("All clusters"="all","Select Cluster"="clust"),selected = "clust"),
-                radioButtons("gene","Select one", c("All genes"="allgene","Enter Genelist"="genelist"),selected = "allgene"),
+            box(
+              width = 9, status = "primary",solidHeader = TRUE,
+              title = "Ligand Receptor pairs",
+              DT::dataTableOutput('pairs_res')
+            ),#end of box
+            box(width = 3, status = "primary",solidHeader = TRUE,title = "Controls",
+                uiOutput("pairby"),
+                radioButtons("clust","Select Cluster", c("All clusters"="all","Select Cluster"="clust"),selected = "clust"),
+                radioButtons("gene","Select Genes", c("All genes"="allgene","Enter Genelist"="genelist"),selected = "allgene"),
                 
                 conditionalPanel(
                   condition = "input.clust == 'all' && input.gene == 'genelist'" ,
@@ -177,13 +184,9 @@ ui <- dashboardPage(
                     column(6,uiOutput('evidence'))
                   )
                 )
-            ),
+            )
             
-            box(
-              width = 10, status = "primary",solidHeader = TRUE,
-              title = "Ligand Receptor pairs",
-              DT::dataTableOutput('pairs_res')
-            )#end of box
+           
     )#end of tabitem
     )#end of tabitems
   )#end of dashboard body
