@@ -18,7 +18,7 @@ ui <- dashboardPage(
                      menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
                      uiOutput("projects"),
                      menuItem('Compare tSNE Plots', tabName = 'tsneplot', icon = icon('hand-o-right')),
-                     menuItem('Biplot', tabName = 'biplot', icon = icon('hand-o-right')),
+                     #menuItem('Biplot', tabName = 'biplot', icon = icon('hand-o-right')),
                      menuItem('Differential Expression', tabName = 'deg', icon = icon('hand-o-right')),
                               #menuSubItem("Find Marker Genes", tabName = "deg")),
                      menuItem('Heatmap', tabName = 'heatmap', icon = icon('hand-o-right')),
@@ -82,22 +82,22 @@ ui <- dashboardPage(
     ),#end of degtab
     ###################################################################################################################################### 
     
-    tabItem(tabName = "biplot",
-            fluidRow(
-              box(plotOutput("bigeneplot", height = 600),width=8, status='primary',title = "Bigene Plot",solidHeader = TRUE),
-              
-              box(
-                title = "Controls",solidHeader = TRUE,width=4,status='primary',
-                textInput("bigene_genea", label = "Gene A",value = "Sox2"),
-                #sliderInput("bigene_rangea", "Expression Limits Gene A(log2(UMI))",min = 0, max = 10, value = 0.5,step=.25),
-                uiOutput("bigene_rangea"),
-                textInput("bigene_geneb", label = "Gene B",value = "Sox9"),
-                #sliderInput("bigene_rangeb", "Expression Limits Gene B(log2(UMI))",min = 0, max = 10, value = 1.5,step=.25),
-                uiOutput("bigene_rangeb"),
-                sliderInput("bigene_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25)
-              )
-            )
-    ),#endbigeneplotTab
+    # tabItem(tabName = "biplot",
+    #         fluidRow(
+    #           box(plotOutput("bigeneplot", height = 600),width=8, status='primary',title = "Bigene Plot",solidHeader = TRUE),
+    #           
+    #           box(
+    #             title = "Controls",solidHeader = TRUE,width=4,status='primary',
+    #             textInput("bigene_genea", label = "Gene A",value = "Sox2"),
+    #             #sliderInput("bigene_rangea", "Expression Limits Gene A(log2(UMI))",min = 0, max = 10, value = 0.5,step=.25),
+    #             uiOutput("bigene_rangea"),
+    #             textInput("bigene_geneb", label = "Gene B",value = "Sox9"),
+    #             #sliderInput("bigene_rangeb", "Expression Limits Gene B(log2(UMI))",min = 0, max = 10, value = 1.5,step=.25),
+    #             uiOutput("bigene_rangeb"),
+    #             sliderInput("bigene_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25)
+    #           )
+    #         )
+    # ),#endbigeneplotTab
     ######################################################################################################################################
     tabItem(tabName = "deg",
             box(title = "Compare tSNE plots",solidHeader = TRUE,width=9,status='primary',
@@ -145,11 +145,9 @@ ui <- dashboardPage(
     ),#end of tab
     ######################################################################################################################################
     tabItem(tabName = "ligrec",
-            box(
-              width = 9, status = "primary",solidHeader = TRUE,
-              title = "Ligand Receptor pairs",
-              DT::dataTableOutput('pairs_res')
-            ),#end of box
+            box(width=9, status='primary',title = "Bigene Plot",solidHeader = TRUE,
+              plotOutput("bigeneplot", height = 800)
+              ),
             box(width = 3, status = "primary",solidHeader = TRUE,title = "Controls",
                 uiOutput("pairby"),
                 radioButtons("clust","Select Cluster", c("All clusters"="all","Select Cluster"="clust"),selected = "clust"),
@@ -183,8 +181,16 @@ ui <- dashboardPage(
                     condition = "input.checkevi ==true",
                     column(6,uiOutput('evidence'))
                   )
-                )
-            )
+                ),
+                uiOutput("bigene_rangea"),
+                uiOutput("bigene_rangeb"),
+                sliderInput("bigene_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25)
+            ),
+            box(
+              width = 12, status = "primary",solidHeader = TRUE,
+              title = "Ligand Receptor pairs",
+              DT::dataTableOutput('pairs_res')
+            )#end of box
             
            
     )#end of tabitem

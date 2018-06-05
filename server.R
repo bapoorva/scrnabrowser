@@ -282,7 +282,12 @@ server <- function(input, output,session) {
   
   output$bigene_rangea <- renderUI({
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
-    r<-getGeneRange(fileload(),input$bigene_genea)
+      table=datasetInput()
+      s=input$pairs_res_rows_selected
+      table=table[s, ,drop=FALSE]
+      bigene_genea=table$ligand
+      #textInput("bigene_genea", label = "Gene A",value = bigene_genea)
+    r<-getGeneRange(fileload(),bigene_genea)
     sliderInput("bigene_rangea", "Expression Limit Gene A (log2 UMI)",
                 min = 0, max = r[2], value = c(r[1],r[2]),step=.25)
   })
@@ -290,7 +295,12 @@ server <- function(input, output,session) {
   
   output$bigene_rangeb <- renderUI({
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
-    r<-getGeneRange(fileload(),input$bigene_geneb)
+      table=datasetInput()
+      s=input$pairs_res_rows_selected
+      table=table[s, ,drop=FALSE]
+      bigene_geneb=table$receptor
+      #textInput("bigene_geneb", label = "Gene B",value = bigene_geneb)
+    r<-getGeneRange(fileload(),bigene_geneb)
     sliderInput("bigene_rangeb", "Expression Limit Gene B (log2 UMI)",
                 min = 0, max = r[2], value = c(r[1],r[2]),step=.25)
   })
@@ -298,8 +308,13 @@ server <- function(input, output,session) {
   
   output$bigeneplot <- renderPlot({
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+      table=datasetInput()
+      s=input$pairs_res_rows_selected
+      table=table[s, ,drop=FALSE]
+      bigene_genea=as.character(table$ligand)
+      bigene_geneb=as.character(table$receptor)
     bigene_plot(fileload(),
-                c(input$bigene_genea,input$bigene_geneb),
+                c(bigene_genea,bigene_geneb),
                 limita=input$bigene_rangea,
                 limitb=input$bigene_rangeb,
                 marker_size = input$bigene_pointsize)
@@ -567,7 +582,7 @@ server <- function(input, output,session) {
        metadata=as.data.frame(scrna@meta.data)
        metadata=metadata %>% select(starts_with("var_"))
        options=c("ident",colnames(metadata))
-       selectInput("pairby","Select cell group ",options,selected=options[1])
+       selectInput("pairby","Select cell group ",options,selected=options[2])
      })
    })
    
@@ -639,7 +654,7 @@ server <- function(input, output,session) {
    
    datasetInput = reactive({
      scrna=fileload()
-     #var=input$pairby
+     var=as.character(input$pairby)
      tt=rownames(scrna@raw.data)
      file = read.csv("data/param.csv")
      org=as.character(file$organism[file$projects==input$projects])
@@ -648,36 +663,38 @@ server <- function(input, output,session) {
        genes$genes=toupper(genes$genes)
      }
      genes2=tt[tt %in% genes$genes]
-     my.data=FetchData(scrna,c(ident,"nGene",genes2))
+     my.data=FetchData(scrna,c(var,"nGene",genes2))
      colnames(my.data)[1]= "clust"
+     #my.data$clust=as.factor(my.data$clust)
      
      if(org=="mouse"){rl=read.csv("data/Mm_PairsLigRec.csv")}else if(org=="human"){rl=read.csv("data/Hs_PairsLigRec.csv")}
      result=data.frame()
      res=data.frame()
-     for(i in 1:(length(unique(my.data$clust)))){
-       for(j in 1:(length(unique(my.data$clust)))){
+     i=1
+     j=2
+     # for(i in 1:(length(unique(my.data$clust)))){
+     #   for(j in 1:(length(unique(my.data$clust)))){
          if(i!=j){
-           test=my.data[my.data$clust==levels(my.data$clust)[i] | my.data$clust==levels(my.data$clust)[j],]
-           R_c1=test[test$clust==levels(my.data$clust)[i] ,(colnames(test) %in% rl$receptor)]
-           L_c2=test[test$clust==levels(my.data$clust)[j] , (colnames(test) %in% rl$ligand)]
+           test=my.data[my.data$clust==unique(my.data$clust)[i] | my.data$clust==unique(my.data$clust)[j],]
+           R_c1=test[test$clust==unique(my.data$clust)[i] ,(colnames(test) %in% rl$receptor)]
+           L_c2=test[test$clust==unique(my.data$clust)[j] , (colnames(test) %in% rl$ligand)]
            keep1 = colSums(R_c1>1)>=.5*dim(R_c1)[1]
            keep2 = colSums(L_c2>1)>=.5*dim(L_c2)[1]
-           
            R_c1=R_c1[,keep1]
            L_c2=L_c2[,keep2]
            res=rl[(rl$ligand %in% colnames(L_c2)) & (rl$receptor %in% colnames(R_c1)),]
-           
+
          }
          else{}
-         if(nrow(res)!=0){
-           res$Receptor_cluster=levels(my.data$clust)[i]
-           res$Lig_cluster=levels(my.data$clust)[j]
-           result=rbind(result,res)
-         }else{result=result}
-       }
-     }
-     result=result[result$Receptor_cluster!=result$Lig_cluster,]
-     return(result)
+     #     if(nrow(res)!=0){
+     #       res$Receptor_cluster=levels(my.data$clust)[i]
+     #       res$Lig_cluster=levels(my.data$clust)[j]
+     #       result=rbind(result,res)
+     #     }else{result=result}
+     #   }
+     # }
+     #result=result[result$Receptor_cluster!=result$Lig_cluster,]
+     return(res)
    })
    
    finalres= reactive({
@@ -737,7 +754,7 @@ server <- function(input, output,session) {
                                     lengthMenu = list(c(30, 50, 100, 150, 200, -1), c('30', '50', '100', '150', '200', 'All')),
                                     scrollX = TRUE,
                                     buttons = c('copy', 'print')
-                     ),rownames=FALSE,caption= "Result")
+                     ),rownames=FALSE,caption= "Result",selection = list(mode = 'single', selected =1),escape = F)
      })
    })
    
