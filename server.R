@@ -284,12 +284,8 @@ server <- function(input, output,session) {
   
   output$bigene_rangea <- renderUI({
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
-      table=datasetInput()
-      s=input$pairs_res_rows_selected
-      table=table[s, ,drop=FALSE]
-      bigene_genea=table$ligand
       #textInput("bigene_genea", label = "Gene A",value = bigene_genea)
-    r<-getGeneRange(fileload(),bigene_genea)
+    r<-getGeneRange(fileload(),input$bigene_genea)
     sliderInput("bigene_rangea", "Expression Limit Gene A (log2 UMI)",
                 min = 0, max = r[2], value = c(r[1],r[2]),step=.25)
   })
@@ -297,32 +293,64 @@ server <- function(input, output,session) {
   
   output$bigene_rangeb <- renderUI({
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
-      table=datasetInput()
-      s=input$pairs_res_rows_selected
-      table=table[s, ,drop=FALSE]
-      bigene_geneb=table$receptor
       #textInput("bigene_geneb", label = "Gene B",value = bigene_geneb)
-    r<-getGeneRange(fileload(),bigene_geneb)
+    r<-getGeneRange(fileload(),input$bigene_geneb)
     sliderInput("bigene_rangeb", "Expression Limit Gene B (log2 UMI)",
                 min = 0, max = r[2], value = c(r[1],r[2]),step=.25)
   })
   })
   
-  output$bigeneplot <- renderPlot({
+  output$bigene_rangea2 <- renderUI({
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
-      table=datasetInput()
+      table=finalres()
       s=input$pairs_res_rows_selected
       table=table[s, ,drop=FALSE]
-      bigene_genea=as.character(table$ligand)
-      bigene_geneb=as.character(table$receptor)
+      bigene_genea=table$ligand
+      #textInput("bigene_genea", label = "Gene A",value = bigene_genea)
+      r<-getGeneRange(fileload(),bigene_genea)
+      sliderInput("bigene_rangea", "Expression Limit Gene A (log2 UMI)",
+                  min = 0, max = r[2], value = c(r[1],r[2]),step=.25)
+    })
+  })
+  
+  output$bigene_rangeb2 <- renderUI({
+    withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+      table=finalres()
+      s=input$pairs_res_rows_selected
+      table=table[s, ,drop=FALSE]
+      bigene_geneb=table$receptor
+      #textInput("bigene_geneb", label = "Gene B",value = bigene_geneb)
+      r<-getGeneRange(fileload(),bigene_geneb)
+      sliderInput("bigene_rangeb", "Expression Limit Gene B (log2 UMI)",
+                  min = 0, max = r[2], value = c(r[1],r[2]),step=.25)
+    })
+  })
+  
+  output$bigeneplot <- renderPlot({
+    withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
     bigene_plot(fileload(),
-                c(bigene_genea,bigene_geneb),
+                c(input$bigene_genea,input$bigene_geneb),
                 limita=input$bigene_rangea,
                 limitb=input$bigene_rangeb,
                 marker_size = input$bigene_pointsize)
   })
   })
 
+  output$bigeneplot2 <- renderPlot({
+    withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+      table=finalres()
+      s=input$pairs_res_rows_selected
+      table=table[s, ,drop=FALSE]
+      bigene_genea=as.character(table$ligand)
+      bigene_geneb=as.character(table$receptor)
+      bigene_plot(fileload(),
+                  c(bigene_genea,bigene_geneb),
+                  limita=input$bigene_rangea,
+                  limitb=input$bigene_rangeb,
+                  marker_size = input$bigene_pointsize2)
+    })
+  })
+  
   bigene_getValues <- function(scrna,gene_probes,limita,limitb){
     gene_values=FetchData(scrna,c(gene_probes[1],gene_probes[2]))
     colnames(gene_values) <- c('genea','geneb')
@@ -757,4 +785,59 @@ server <- function(input, output,session) {
      })
    })
    
+   ###################################################
+   ###################################################
+   ########### Plot gene expression  ################
+   ###################################################
+   ###################################################
+   
+   geplots = reactive({
+     scrna=fileload()
+     validate(need(input$geneid,"Enter the gene symbol"))
+     # metadata=as.data.frame(scrna@meta.data)
+     # met= sapply(metadata,is.numeric)
+     # scrna@meta.data$var_cluster=as.numeric(scrna@meta.data$var_cluster)
+     # tsnea=input$tsnea
+     # tsneb=input$tsneb
+     # feature=names(met[met==TRUE])
+     # tsne=names(met[met==FALSE])
+     # if(input$tsnea =="Cell.group"){
+     #   plot1=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa) + theme(legend.position="bottom")
+     # }else if(input$tsnea %in% tsne){
+     #   plot1=TSNEPlot(object = scrna,group.by = tsnea,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa)
+     # }else if(input$tsnea %in% feature){
+     #   plot1=FeaturePlot(object = scrna, features.plot = tsnea, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa)
+     #   plot1=eval(parse(text=paste("plot1$`",tsnea,"`",sep="")))
+     # }
+     # markers=markergenes()
+     # s=input$markergenes_rows_selected # get  index of selected row from table
+     # markers=markers[s, ,drop=FALSE]
+     plot2=FeaturePlot(object = scrna, features.plot = input$geneid, cols.use = c("grey","blue"),reduction.use = "tsne",
+                       no.legend = FALSE,pt.size = input$genenid_pointsize,do.return = T)
+     plot2=eval(parse(text=paste("plot2$",input$geneid,sep="")))
+     plot3=VlnPlot(object = scrna, features.plot = input$geneid,group.by = "ident",do.return = T,x.lab.rot=TRUE)
+     plot4=RidgePlot(object = scrna, features.plot = input$geneid,group.by = "ident",do.return = T,x.lab.rot=TRUE)
+     
+     
+     row1=plot_grid(plot2,align = 'h', rel_heights = c(1, 1),axis="lr", nrow=1)
+     row2=plot_grid(plot3,plot4,align = 'h', rel_heights = c(1, 1),axis="lr", nrow=1)
+     plot_grid(row1,row2,align = 'v', rel_heights = c(1.7, 1),axis="tb",ncol=1)
+     
+   })
+   
+   output$geplots = renderPlot({
+     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+       geplots()
+     })
+   })
+   
+   output$downloadplotge <- downloadHandler(
+     filename = function() {
+       paste0(input$geneid,"_Geneexp_plot.jpg",sep="")
+     },
+     content = function(file){
+       jpeg(file, quality = 100, width = 800, height = 800)
+       plot(geplots())
+       dev.off()
+     })
 }#end of server

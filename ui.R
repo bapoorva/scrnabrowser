@@ -6,7 +6,6 @@ library(d3heatmap)
 library(shinyjs)
 library(rglwidget)
 library(SPIA)
-library(cellrangerRkit)
 library(reshape2)
 
 ui <- dashboardPage(
@@ -18,11 +17,11 @@ ui <- dashboardPage(
                      menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
                      uiOutput("projects"),
                      menuItem('Compare tSNE Plots', tabName = 'tsneplot', icon = icon('hand-o-right')),
-                     #menuItem('Biplot', tabName = 'biplot', icon = icon('hand-o-right')),
+                     menuItem('Biplot', tabName = 'biplot', icon = icon('hand-o-right')),
                      menuItem('Differential Expression', tabName = 'deg', icon = icon('hand-o-right')),
-                              #menuSubItem("Find Marker Genes", tabName = "deg")),
+                     menuItem('Gene Expression Plots', tabName = 'geplots', icon = icon('hand-o-right'),badgeLabel = "new", badgeColor = "green"),
                      menuItem('Heatmap', tabName = 'heatmap', icon = icon('hand-o-right')),
-                     menuItem('Ligand Receptor Pairs', tabName = 'ligrec', icon = icon('hand-o-right'),badgeLabel = "new", badgeColor = "green")
+                     menuItem('Ligand Receptor Pairs', tabName = 'ligrec', icon = icon('hand-o-right'))
                    )#end of sidebar menu
   ),#end dashboardSidebar
   
@@ -82,22 +81,22 @@ ui <- dashboardPage(
     ),#end of degtab
     ###################################################################################################################################### 
     
-    # tabItem(tabName = "biplot",
-    #         fluidRow(
-    #           box(plotOutput("bigeneplot", height = 600),width=8, status='primary',title = "Bigene Plot",solidHeader = TRUE),
-    #           
-    #           box(
-    #             title = "Controls",solidHeader = TRUE,width=4,status='primary',
-    #             textInput("bigene_genea", label = "Gene A",value = "Sox2"),
-    #             #sliderInput("bigene_rangea", "Expression Limits Gene A(log2(UMI))",min = 0, max = 10, value = 0.5,step=.25),
-    #             uiOutput("bigene_rangea"),
-    #             textInput("bigene_geneb", label = "Gene B",value = "Sox9"),
-    #             #sliderInput("bigene_rangeb", "Expression Limits Gene B(log2(UMI))",min = 0, max = 10, value = 1.5,step=.25),
-    #             uiOutput("bigene_rangeb"),
-    #             sliderInput("bigene_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25)
-    #           )
-    #         )
-    # ),#endbigeneplotTab
+    tabItem(tabName = "biplot",
+            fluidRow(
+              box(plotOutput("bigeneplot", height = 600),width=8, status='primary',title = "Bigene Plot",solidHeader = TRUE),
+
+              box(
+                title = "Controls",solidHeader = TRUE,width=4,status='primary',
+                textInput("bigene_genea", label = "Gene A",value = "Sox2"),
+                #sliderInput("bigene_rangea", "Expression Limits Gene A(log2(UMI))",min = 0, max = 10, value = 0.5,step=.25),
+                uiOutput("bigene_rangea"),
+                textInput("bigene_geneb", label = "Gene B",value = "Sox9"),
+                #sliderInput("bigene_rangeb", "Expression Limits Gene B(log2(UMI))",min = 0, max = 10, value = 1.5,step=.25),
+                uiOutput("bigene_rangeb"),
+                sliderInput("bigene_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25)
+              )
+            )
+    ),#endbigeneplotTab
     ######################################################################################################################################
     tabItem(tabName = "deg",
             box(title = "Compare tSNE plots",solidHeader = TRUE,width=9,status='primary',
@@ -146,11 +145,11 @@ ui <- dashboardPage(
     ######################################################################################################################################
     tabItem(tabName = "ligrec",
             box(width=9, status='primary',title = "Bigene Plot",solidHeader = TRUE,
-              plotOutput("bigeneplot", height = 800)
+              plotOutput("bigeneplot2", height = 800)
               ),
             box(width = 3, status = "primary",solidHeader = TRUE,title = "Controls",
                 uiOutput("pairby"),
-                radioButtons("clust","Select Cluster", c("All clusters"="all","Select Cluster"="clust"),selected = "clust"),
+                radioButtons("clust","Select Cluster", c("All clusters"="all","Select Cluster"="clust"),selected = "all"),
                 radioButtons("gene","Select Genes", c("All genes"="allgene","Enter Genelist"="genelist"),selected = "allgene"),
                 
                 conditionalPanel(
@@ -182,9 +181,9 @@ ui <- dashboardPage(
                     column(6,uiOutput('evidence'))
                   )
                 ),
-                uiOutput("bigene_rangea"),
-                uiOutput("bigene_rangeb"),
-                sliderInput("bigene_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25)
+                uiOutput("bigene_rangea2"),
+                uiOutput("bigene_rangeb2"),
+                sliderInput("bigene_pointsize2", "Point Size:",min = 0, max = 5, value = 1,step=.25)
             ),
             box(
               width = 12, status = "primary",solidHeader = TRUE,
@@ -193,7 +192,20 @@ ui <- dashboardPage(
             )#end of box
             
            
-    )#end of tabitem
+    ),#end of tabitem
+    ######################################################################################################################################
+    tabItem(tabName = "geplots",
+            box(title = "Gene Expression Plots",solidHeader = TRUE,width=9,status='primary',
+                plotOutput("geplots", height = 1000)
+            ),
+
+            fluidRow(
+              box(title = "Controls",solidHeader = TRUE,width=3,status='primary',
+                  textInput("geneid", label = "Enter Gene",value = ""),
+                  sliderInput("genenid_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25),
+                  downloadButton('downloadplotge', 'Download Plot'))
+            )#End FluidRow
+    )#end of geplot
     )#end of tabitems
   )#end of dashboard body
 )#end of dashboard page
