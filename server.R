@@ -193,7 +193,7 @@ server <- function(input, output,session) {
     },
     content = function(file){
       jpeg(file, quality = 100, width = 800, height = 800)
-      plot(comptsne2()())
+      plot(comptsne2())
       dev.off()
     })
   
