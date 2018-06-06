@@ -192,7 +192,7 @@ server <- function(input, output,session) {
       paste0("Compare_tsne.jpg")
     },
     content = function(file){
-      png(file, quality = 100, width = 800, height = 800)
+      jpeg(file, quality = 100, width = 800, height = 800)
       plot(comptsne2())
       dev.off()
     })
