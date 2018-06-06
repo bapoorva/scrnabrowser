@@ -192,7 +192,7 @@ server <- function(input, output,session) {
       paste0("Compare_tsne.jpg")
     },
     content = function(file){
-      jpeg(file, quality = 100, width = 800, height = 800)
+      png(file, quality = 100, width = 800, height = 800)
       plot(comptsne2())
       dev.off()
     })
@@ -223,13 +223,10 @@ server <- function(input, output,session) {
     metadata=as.data.frame(scrna@meta.data)
     met= sapply(metadata,is.numeric)
     scrna@meta.data$var_cluster=as.numeric(scrna@meta.data$var_cluster)
-    #metadata=metadata %>% select(starts_with("var"))
     tsnea=input$tsnea
     tsneb=input$tsneb
     feature=names(met[met==TRUE])
-    #feature=c("nGene","nUMI","percent.mito","S.Score","G2M.Score","var.ratio.pca")
     tsne=names(met[met==FALSE])
-    #tsne=c(colnames(metadata),"Phase","sample")
     if(input$tsnea =="Cell.group"){
       plot1=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa) + theme(legend.position="bottom")
     }else if(input$tsnea %in% tsne){
@@ -586,8 +583,8 @@ server <- function(input, output,session) {
        scrna=fileload()
        metadata=as.data.frame(scrna@meta.data)
        metadata=metadata %>% select(starts_with("var_"))
-       options=c("ident",colnames(metadata))
-       selectInput("pairby","Select cell group ",options,selected=options[2])
+       options=colnames(metadata)
+       selectInput("pairby","Select cell group ",options,selected=options[1])
      })
    })
    
@@ -675,14 +672,12 @@ server <- function(input, output,session) {
      if(org=="mouse"){rl=read.csv("data/Mm_PairsLigRec.csv")}else if(org=="human"){rl=read.csv("data/Hs_PairsLigRec.csv")}
      result=data.frame()
      res=data.frame()
-     i=1
-     j=2
-     # for(i in 1:(length(unique(my.data$clust)))){
-     #   for(j in 1:(length(unique(my.data$clust)))){
-         if(i!=j){
-           test=my.data[my.data$clust==unique(my.data$clust)[i] | my.data$clust==unique(my.data$clust)[j],]
-           R_c1=test[test$clust==unique(my.data$clust)[i] ,(colnames(test) %in% rl$receptor)]
-           L_c2=test[test$clust==unique(my.data$clust)[j] , (colnames(test) %in% rl$ligand)]
+     for(i in 1:(length(levels(my.data$clust)))){
+       for(j in 1:(length(levels(my.data$clust)))){
+          if(i!=j){
+           test=my.data[my.data$clust==levels(my.data$clust)[i] | my.data$clust==levels(my.data$clust)[j],]
+           R_c1=test[test$clust==levels(my.data$clust)[i] ,(colnames(test) %in% rl$receptor)]
+           L_c2=test[test$clust==levels(my.data$clust)[j] , (colnames(test) %in% rl$ligand)]
            keep1 = colSums(R_c1>1)>=.5*dim(R_c1)[1]
            keep2 = colSums(L_c2>1)>=.5*dim(L_c2)[1]
            R_c1=R_c1[,keep1]
@@ -691,15 +686,15 @@ server <- function(input, output,session) {
 
          }
          else{}
-     #     if(nrow(res)!=0){
-     #       res$Receptor_cluster=levels(my.data$clust)[i]
-     #       res$Lig_cluster=levels(my.data$clust)[j]
-     #       result=rbind(result,res)
-     #     }else{result=result}
-     #   }
-     # }
-     #result=result[result$Receptor_cluster!=result$Lig_cluster,]
-     return(res)
+         if(nrow(res)!=0){
+           res$Receptor_cluster=levels(my.data$clust)[i]
+           res$Lig_cluster=levels(my.data$clust)[j]
+           result=rbind(result,res)
+         }else{result=result}
+     }
+     }
+     result=result[result$Receptor_cluster!=result$Lig_cluster,]
+     return(result)
    })
    
    finalres= reactive({
@@ -745,13 +740,12 @@ server <- function(input, output,session) {
    #print data TABLE
    output$pairs_res = DT::renderDataTable({
      input$pairby
-     input$pairby2
      input$clust1
      input$clust2
      input$genelist1
      input$genelist2
      withProgress(session = session, message = 'Loading...',detail = 'Please Wait...',{
-       DT::datatable(datasetInput(),
+       DT::datatable(finalres(),
                      extensions = c('Buttons','Scroller'),
                      options = list(dom = 'Bfrtip',
                                     searchHighlight = TRUE,
