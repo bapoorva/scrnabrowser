@@ -192,8 +192,11 @@ server <- function(input, output,session) {
       paste0("Compare_tsne.jpg")
     },
     content = function(file){
-      ggsave(file, plot = comptsne2(), device = "jpg")
+      jpeg(file, quality = 100, width = 800, height = 800)
+      plot(comptsne2()())
+      dev.off()
     })
+  
   ###################################################
   ###################################################
   ####### Compare Tsne plots with controls  ##########
@@ -262,9 +265,11 @@ server <- function(input, output,session) {
       paste0("Plot.jpg")
     },
     content = function(file){
-      ggsave(file, plot = comptsne(), device = "jpg", height = 1000 ,width =700 )
+      jpeg(file, quality = 100, width = 800, height = 800)
+      plot(comptsne())
+      dev.off()
     })
-
+  
   ######################################################################################################
   ######################################################################################################
   ####### Display Biplot plot with controls ############################################################
