@@ -695,7 +695,7 @@ server <- function(input, output,session) {
      genes2=tt[tt %in% genes$genes]
      my.data=FetchData(scrna,c(var,"nGene",genes2))
      colnames(my.data)[1]= "clust"
-     #my.data$clust=as.factor(my.data$clust)
+     #my.data$clust=factor(my.data$clust,levels=unique(my.data$clust))
      
      if(org=="mouse"){rl=read.csv("data/Mm_PairsLigRec.csv")}else if(org=="human"){rl=read.csv("data/Hs_PairsLigRec.csv")}
      result=data.frame()
