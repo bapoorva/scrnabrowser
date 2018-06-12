@@ -189,10 +189,10 @@ server <- function(input, output,session) {
   
   output$downloadtsneplot <- downloadHandler(
     filename = function() {
-      paste0("Compare_tsne.jpg")
+      paste0("Compare_tsne.pdf")
     },
     content = function(file){
-      jpeg(file, quality = 100, width = 800, height = 800)
+      pdf(file,width=14,height = 8)
       plot(comptsne2())
       dev.off()
     })
@@ -259,10 +259,10 @@ server <- function(input, output,session) {
   
   output$downloadplot <- downloadHandler(
     filename = function() {
-      paste0("Plot.jpg")
+      paste0("Plot.pdf")
     },
     content = function(file){
-      jpeg(file, quality = 100, width = 800, height = 800)
+      pdf(file, width = 12, height = 11)
       plot(comptsne())
       dev.off()
     })
@@ -305,10 +305,11 @@ server <- function(input, output,session) {
       table=finalres()
       s=input$pairs_res_rows_selected
       table=table[s, ,drop=FALSE]
+      validate(need(nrow(table) > 0,"No Ligand-receptor pairs found"))
       bigene_genea=table$ligand
       #textInput("bigene_genea", label = "Gene A",value = bigene_genea)
       r<-getGeneRange(fileload(),bigene_genea)
-      sliderInput("bigene_rangea", "Expression Limit Gene A (log2 UMI)",
+      sliderInput("bigene_rangea", "Expression Limit of Ligand Gene (log2 UMI)",
                   min = 0, max = r[2], value = c(r[1],r[2]),step=.25)
     })
   })
@@ -316,12 +317,13 @@ server <- function(input, output,session) {
   output$bigene_rangeb2 <- renderUI({
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
       table=finalres()
+      validate(need(nrow(table) > 0,"No Ligand-receptor pairs found"))
       s=input$pairs_res_rows_selected
       table=table[s, ,drop=FALSE]
       bigene_geneb=table$receptor
       #textInput("bigene_geneb", label = "Gene B",value = bigene_geneb)
       r<-getGeneRange(fileload(),bigene_geneb)
-      sliderInput("bigene_rangeb", "Expression Limit Gene B (log2 UMI)",
+      sliderInput("bigene_rangeb", "Expression Limit of Receptor Gene (log2 UMI)",
                   min = 0, max = r[2], value = c(r[1],r[2]),step=.25)
     })
   })
@@ -341,6 +343,7 @@ server <- function(input, output,session) {
       table=finalres()
       s=input$pairs_res_rows_selected
       table=table[s, ,drop=FALSE]
+      validate(need(nrow(table) > 0,"No Ligand-receptor pairs found"))
       bigene_genea=as.character(table$ligand)
       bigene_geneb=as.character(table$receptor)
       bigene_plot(fileload(),
@@ -583,16 +586,16 @@ server <- function(input, output,session) {
      })
    })
    
+   
    output$downloadheatmap <- downloadHandler(
      filename = function() {
-       paste0("heatmap.jpg")
+       paste0("Heatmap.pdf")
      },
      content = function(file){
-       jpeg(file, quality = 100, width = 800, height = 400)
+       pdf(file, width = 13, height = 8)
        plot(heatmap())
        dev.off()
      })
-  
    ###################################################
    ###################################################
    ####### UPLOAD GENELISTS AND SELECT CLUSTER #######
@@ -728,11 +731,11 @@ server <- function(input, output,session) {
    finalres= reactive({
      result=datasetInput()
      if(input$clust=="clust" & input$gene=="allgene"){
-       clusters=c(input$clust1,input$clust2)
-       result=result[(result$Receptor_cluster %in% clusters) & (result$Lig_cluster%in% clusters),]
+       #clusters=c(input$clust1,input$clust2)
+       result=result[(result$Receptor_cluster %in% input$clust1) & (result$Lig_cluster%in% input$clust2),]
      }else if(input$clust=="clust" & input$gene=="genelist"){
-       clusters.1=c(input$clust1.1,input$clust2.1)
-       result=result[(result$Receptor_cluster %in% clusters.1) & (result$Lig_cluster%in% clusters.1),]
+       #clusters.1=c(input$clust1.1,input$clust2.1)
+       result=result[(result$Receptor_cluster %in% input$clust1.1) & (result$Lig_cluster%in% input$clust2.1),]
      }else{result=result
      }
      
@@ -833,10 +836,10 @@ server <- function(input, output,session) {
    
    output$downloadplotge <- downloadHandler(
      filename = function() {
-       paste0(input$geneid,"_Geneexp_plot.jpg",sep="")
+       paste0(input$geneid,"_Geneexp_plot.pdf",sep="")
      },
      content = function(file){
-       jpeg(file, quality = 100, width = 800, height = 800)
+       pdf(file,width=8,height = 13)
        plot(geplots())
        dev.off()
      })
