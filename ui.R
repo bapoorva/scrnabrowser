@@ -118,13 +118,11 @@ ui <- dashboardPage(
                 conditionalPanel(
                   condition = "input.setident ==true",uiOutput("setidentlist"),
                   uiOutput("identa"),
-                  uiOutput("identb")
-                ),
-                actionButton("click","Click to find Marker genes"),
-                hr(),
+                  uiOutput("identb"),
+                
                 sliderInput("lfc", "Log FC threshold:",min = 0.25, max = 6, value = 0.25,step=.25),
                 selectInput("test", "Select test to use",c('Wilcox' = "wilcox",'T-test' = "t", 'Poisson' = "poisson",'Negative Binomial'="negbinom"),selected = "wilcox"),
-                sliderInput("minpct", "Minimum Percent of cells:",min = 0.1, max = 10, value = 0.25),
+                sliderInput("minpct", "Minimum Percent of cells:",min = 0.1, max = 10, value = 0.25)),
                 downloadButton('downloaddeg', 'Download table'),
                 downloadButton('downloadplot', 'Download Plot')
               ),
