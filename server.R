@@ -222,7 +222,7 @@ server <- function(input, output,session) {
     scrna=fileload()
     metadata=as.data.frame(scrna@meta.data)
     met= sapply(metadata,is.numeric)
-    scrna@meta.data$var_cluster=as.numeric(scrna@meta.data$var_cluster)
+    scrna@meta.data$var_cluster=as.numeric(as.character(scrna@meta.data$var_cluster))
     tsnea=input$tsnea
     tsneb=input$tsneb
     feature=names(met[met==TRUE])
