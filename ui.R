@@ -107,6 +107,7 @@ ui <- dashboardPage(
               box(title = "Controls",solidHeader = TRUE,width=3,status='primary',
                 uiOutput("tsnea"),
                 sliderInput("pointa", "Point Size:",min = 0, max = 5, value = 1,step=.25),
+                checkboxInput("checkviolin", label = "Check to remove points from violin plot", value = FALSE),
                 #selectInput("categorya", "Select tSNE group to display",c('Categories' = "var",'Cell group' = "clust"),selected = "clust"),
                 # conditionalPanel(
                 #     condition = "input.categorya == 'var'",
@@ -119,7 +120,7 @@ ui <- dashboardPage(
                   condition = "input.setident ==true",uiOutput("setidentlist"),
                   uiOutput("identa"),
                   uiOutput("identb"),
-                
+                  actionButton("goButton", "Go!"),
                 sliderInput("lfc", "Log FC threshold:",min = 0.25, max = 6, value = 0.25,step=.25),
                 selectInput("test", "Select test to use",c('Wilcox' = "wilcox",'T-test' = "t", 'Poisson' = "poisson",'Negative Binomial'="negbinom"),selected = "wilcox"),
                 sliderInput("minpct", "Minimum Percent of cells:",min = 0.1, max = 10, value = 0.25)),

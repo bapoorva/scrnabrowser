@@ -16,6 +16,10 @@ library(rglwidget)
 library(Seurat)
 library(cowplot)
 library(data.table)
+cpallette=c("#64B2CE", "#DA5724", "#74D944", "#CE50CA", "#C0717C", "#CBD588", "#5F7FC7",
+            "#673770", "#D3D93E", "#38333E", "#508578", "#D7C1B1", "#689030", "#AD6F3B", "#CD9BCD",
+            "#D14285", "#6DDE88", "#652926", "#7FDCC0", "#C84248", "#8569D5", "#5E738F", "#D1A33D",
+            "#8A7C64", "#599861")
 server <- function(input, output,session) {
   
   ###################################################
@@ -130,19 +134,19 @@ server <- function(input, output,session) {
     tsne=names(met[met==FALSE])
     #tsne=c(colnames(metadata),"Phase","sample")
     if(input$categorya2 =="clust" & input$subsa==F){
-      plot1=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa2,label.size = 7)
+      plot1=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa2,label.size = 7, colors.use=cpallette)
     }else if(input$categorya2 =="clust" & input$subsa==TRUE){
       cells=names(scrna@ident[scrna@ident==input$selclust])
-      plot1=TSNEPlot(object = scrna,cells.highlight=cells,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa2,label.size = 7)
+      plot1=TSNEPlot(object = scrna,cells.highlight=cells,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa2,label.size = 7, colors.use=cpallette)
     }else if(input$categorya2=="geneexp"){
       plot1=FeaturePlot(object = scrna, features.plot = input$gene1a, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa2,no.legend = FALSE)
       plot1=eval(parse(text=paste("plot1$",input$gene1a,sep="")))
     }else if(input$categorya2 =="var" & input$tsnea2 %in% tsne & input$subsa==FALSE){
-      plot1=TSNEPlot(object = scrna,group.by = tsnea,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2,label.size = 7)
+      plot1=TSNEPlot(object = scrna,group.by = tsnea,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2,label.size = 7, colors.use=cpallette)
     }else if(input$categorya2 =="var" & input$tsnea2 %in% tsne & input$subsa==TRUE){
       t=paste("rownames(scrna@meta.data[scrna@meta.data$",input$tsnea2,"==\"",input$selclust2,"\",])",sep="")
       cells=eval(parse(text=t))
-      plot1=TSNEPlot(object = scrna,group.by = tsnea,cells.highlight=cells,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2,label.size = 7)
+      plot1=TSNEPlot(object = scrna,group.by = tsnea,cells.highlight=cells,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2,label.size = 7, colors.use=cpallette)
     }else if(input$categorya2 =="var" & input$tsnea2 %in% feature & input$subsa==FALSE){
       plot1=FeaturePlot(object = scrna, features.plot = tsnea, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa2,no.legend = FALSE)
       plot1=eval(parse(text=paste("plot1$",tsnea,sep="")))
@@ -154,19 +158,19 @@ server <- function(input, output,session) {
     }
     
     if(input$categoryb2 =="clust" & input$subsb==F){
-      plot2=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2,label.size = 7)
+      plot2=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2,label.size = 7, colors.use=cpallette)
     }else if(input$categoryb2 =="clust" & input$subsb==TRUE){
       cells=names(scrna@ident[scrna@ident==input$selclustb])
-      plot2=TSNEPlot(object = scrna,cells.highlight=cells,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa2,label.size = 7)
+      plot2=TSNEPlot(object = scrna,cells.highlight=cells,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa2,label.size = 7, colors.use=cpallette)
     }else if(input$categoryb2=="geneexp"){
       plot2=FeaturePlot(object = scrna, features.plot = input$gene2a, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa2,no.legend = FALSE)
       plot2=eval(parse(text=paste("plot2$",input$gene2a,sep="")))
     }else if(input$categoryb2 =="var" & input$tsneb2 %in% tsne & input$subsb==F){
-      plot2=TSNEPlot(object = scrna,group.by = tsneb,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2,label.size = 7)
+      plot2=TSNEPlot(object = scrna,group.by = tsneb,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2,label.size = 7, colors.use=cpallette)
     }else if(input$categoryb2 =="var" & input$tsneb2 %in% tsne & input$subsb==TRUE){
       t=paste("rownames(scrna@meta.data[scrna@meta.data$",input$tsneb2,"==\"",input$selclustb2,"\",])",sep="")
       cells=eval(parse(text=t))
-      plot2=TSNEPlot(object = scrna,group.by = tsneb,cells.highlight=cells,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2,label.size = 7)
+      plot2=TSNEPlot(object = scrna,group.by = tsneb,cells.highlight=cells,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2,label.size = 7, colors.use=cpallette)
     }else if(input$categoryb2 =="var" & input$tsneb2 %in% feature & input$subsb==F){
       plot2=FeaturePlot(object = scrna, features.plot = tsneb, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa2,no.legend = FALSE)
       plot2=eval(parse(text=paste("plot2$",tsneb,sep="")))
@@ -228,9 +232,9 @@ server <- function(input, output,session) {
     feature=names(met[met==TRUE])
     tsne=names(met[met==FALSE])
     if(input$tsnea =="Cell.group"){
-      plot1=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa,label.size = 7) + theme(legend.position="bottom")
+      plot1=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa,label.size = 7,colors.use=cpallette) + theme(legend.position="bottom")
     }else if(input$tsnea %in% tsne){
-      plot1=TSNEPlot(object = scrna,group.by = tsnea,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa,label.size = 7)
+      plot1=TSNEPlot(object = scrna,group.by = tsnea,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa,label.size = 7,colors.use=cpallette)
     }else if(input$tsnea %in% feature){
       plot1=FeaturePlot(object = scrna, features.plot = tsnea, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa)
       plot1=eval(parse(text=paste("plot1$`",tsnea,"`",sep="")))
@@ -241,7 +245,9 @@ server <- function(input, output,session) {
       plot2=FeaturePlot(object = scrna, features.plot = rownames(markers), cols.use = c("grey","blue"),reduction.use = "tsne",
                         no.legend = FALSE,pt.size = input$pointa,do.return = T)
       plot2=eval(parse(text=paste("plot2$",rownames(markers),sep="")))
-      plot3=VlnPlot(object = scrna, features.plot = rownames(markers),group.by = input$setidentlist,do.return = T,x.lab.rot=TRUE)
+      if(input$checkviolin ==T){
+      plot3=VlnPlot(object = scrna, features.plot = rownames(markers),group.by = input$setidentlist,do.return = T,x.lab.rot=TRUE,point.size.use=NA)
+      }else{plot3=VlnPlot(object = scrna, features.plot = rownames(markers),group.by = input$setidentlist,do.return = T,x.lab.rot=TRUE)}
       plot4=RidgePlot(object = scrna, features.plot = rownames(markers),group.by = input$setidentlist,do.return = T,x.lab.rot=TRUE)
       
     
@@ -442,18 +448,19 @@ server <- function(input, output,session) {
     }else{
       options=levels(scrna@ident)
     }
-    selectInput("identa", "First cluster to compare",options)
+    selectInput("identa", "First Cell group to compare",options)
     })
   
     output$identb = renderUI({
       scrna=fileload()
+      
       if(input$setident==T){
         scrna <- SetAllIdent(object = scrna, id = input$setidentlist)
         options=unique(scrna@ident)
       }else{
         options=levels(scrna@ident)
       }
-        selectInput("identb", "Second cluster to compare",options,selected=options[2])
+      checkboxGroupInput("identb", label="Second Cell group to compare",choices=options)
     })
   
   
@@ -463,12 +470,16 @@ server <- function(input, output,session) {
   ###################################################
   ###################################################
   markergenes = reactive({
-    #validate(need(input$click==T,"Make your selections and click on the 'Click to find Marker' genes button"))
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
     scrna=fileload()
     
     if(input$setident==T){
+      if(input$goButton == 0)
+        return()
+      isolate({
       scrna <- SetAllIdent(object = scrna, id = input$setidentlist)
+    validate(need(input$identb,"Select at least one option from Second cell group to compare to first cell group. If you want to compare to all, uncheck the 'Check to choose a different category to compare' option"))
+    validate(need(input$identb!=input$identa,"First and second cell groups can't be the same"))
     
     if(input$identb==""){
       markers=FindMarkers(object = scrna, ident.1 = input$identa, min.pct = input$minpct,logfc.threshold=input$lfc,test.use=input$test)
@@ -483,6 +494,8 @@ server <- function(input, output,session) {
     url= paste("http://www.genecards.org/cgi-bin/carddisp.pl?gene=",geneid,sep = "")
     markers$Link=paste0("<a href='",url,"'target='_blank'>",rownames(markers),"</a>")
     }
+    
+    })
     }
     if(input$setident==F){
       markers=eval(parse(text=paste("scrna@misc$`",input$identdef,"`",sep="")))
@@ -493,8 +506,9 @@ server <- function(input, output,session) {
   })
   
   output$markergenes = DT::renderDataTable({
-    input$identa
-    input$identb
+    #input$identa
+    #input$identb
+    input$goButton
     DT::datatable(markergenes(),
                   extensions = 'Buttons', options = list(
                     dom = 'Bfrtip',
