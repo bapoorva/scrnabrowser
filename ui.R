@@ -68,6 +68,10 @@ ui <- dashboardPage(
                   column(6,checkboxInput("subsb", label = "Check to subselect cells", value = FALSE))
                 ),
                 fluidRow(
+                  column(6,checkboxInput("umapa", label = "Check to view UMAP", value = FALSE)),
+                  column(6,checkboxInput("umapb", label = "Check to view UMAP", value = FALSE))
+                ),
+                fluidRow(
                   column(6,conditionalPanel(
                     condition = "input.subsa ==true",uiOutput("subsaui")
                   )),
@@ -106,8 +110,9 @@ ui <- dashboardPage(
             fluidRow(
               box(title = "Controls",solidHeader = TRUE,width=3,status='primary',
                 uiOutput("tsnea"),
+                checkboxInput("umapdeg", label = "Check to view UMAP", value = FALSE),
                 sliderInput("pointa", "Point Size:",min = 0, max = 5, value = 1,step=.25),
-                checkboxInput("checkviolin", label = "Check to remove points from violin plot", value = FALSE),
+                checkboxInput("checkviolin", label = "Check to remove points from violin plot", value = TRUE),
                 #selectInput("categorya", "Select tSNE group to display",c('Categories' = "var",'Cell group' = "clust"),selected = "clust"),
                 # conditionalPanel(
                 #     condition = "input.categorya == 'var'",

@@ -133,6 +133,7 @@ server <- function(input, output,session) {
     #feature=c("nGene","nUMI","percent.mito","S.Score","G2M.Score","var.ratio.pca")
     tsne=names(met[met==FALSE])
     #tsne=c(colnames(metadata),"Phase","sample")
+    if(input$umapa==F){
     if(input$categorya2 =="clust" & input$subsa==F){
       plot1=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa2,label.size = 7, colors.use=cpallette)
     }else if(input$categorya2 =="clust" & input$subsa==TRUE){
@@ -156,7 +157,10 @@ server <- function(input, output,session) {
       plot1=FeaturePlot(object = scrna, features.plot = tsnea,cells.use = cells, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa2,no.legend = FALSE)
       plot1=eval(parse(text=paste("plot1$",tsnea,sep="")))
     }
-    
+    }else{
+      plot1=DimPlot(scrna, reduction.use = "umap", do.label = T,do.return=T,pt.size = input$pointa2,label.size = 5, cols.use=cpallette)
+    }
+    if(input$umapb==F){
     if(input$categoryb2 =="clust" & input$subsb==F){
       plot2=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2,label.size = 7, colors.use=cpallette)
     }else if(input$categoryb2 =="clust" & input$subsb==TRUE){
@@ -180,7 +184,9 @@ server <- function(input, output,session) {
       plot2=FeaturePlot(object = scrna, features.plot = tsneb,cells.use = cells, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa2,no.legend = FALSE)
       plot2=eval(parse(text=paste("plot2$",tsneb,sep="")))
     }
-    
+    }else{
+      plot2=DimPlot(scrna, reduction.use = "umap", do.label = T,do.return=T,pt.size = input$pointa2,label.size = 5, cols.use=cpallette)
+    }
     plot_grid(plot1,plot2)
 
   })
@@ -231,6 +237,7 @@ server <- function(input, output,session) {
     tsneb=input$tsneb
     feature=names(met[met==TRUE])
     tsne=names(met[met==FALSE])
+    if(input$umapdeg==F){
     if(input$tsnea =="Cell.group"){
       plot1=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa,label.size = 7,colors.use=cpallette) + theme(legend.position="bottom")
     }else if(input$tsnea %in% tsne){
@@ -238,6 +245,13 @@ server <- function(input, output,session) {
     }else if(input$tsnea %in% feature){
       plot1=FeaturePlot(object = scrna, features.plot = tsnea, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa)
       plot1=eval(parse(text=paste("plot1$`",tsnea,"`",sep="")))
+    }
+    }else{
+      if(input$tsnea %in% tsne){
+        plot1=DimPlot(scrna, reduction.use = "umap",group.by = tsnea, do.label = T,do.return=T,pt.size = input$pointa, cols.use=cpallette)+ theme(legend.position="bottom")
+      }else{
+      plot1=DimPlot(scrna, reduction.use = "umap", do.label = T,do.return=T,pt.size = input$pointa, cols.use=cpallette)+ theme(legend.position="bottom")
+      }
     }
     markers=markergenes()
       s=input$markergenes_rows_selected # get  index of selected row from table
@@ -499,6 +513,9 @@ server <- function(input, output,session) {
     }
     if(input$setident==F){
       markers=eval(parse(text=paste("scrna@misc$`",input$identdef,"`",sep="")))
+      geneid=rownames(markers)
+      url= paste("http://www.genecards.org/cgi-bin/carddisp.pl?gene=",geneid,sep = "")
+      markers$Link=paste0("<a href='",url,"'target='_blank'>",rownames(markers),"</a>")
     }
     
     })
