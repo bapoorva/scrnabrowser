@@ -132,61 +132,55 @@ server <- function(input, output,session) {
     feature=names(met[met==TRUE])
     #feature=c("nGene","nUMI","percent.mito","S.Score","G2M.Score","var.ratio.pca")
     tsne=names(met[met==FALSE])
-    #tsne=c(colnames(metadata),"Phase","sample")
-    if(input$umapa==F){
+
     if(input$categorya2 =="clust" & input$subsa==F){
-      plot1=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa2,label.size = 7, colors.use=cpallette)
+      plot1=DimPlot(object = scrna,reduction.use=input$umapa,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa2,label.size = 7, cols.use=cpallette)
     }else if(input$categorya2 =="clust" & input$subsa==TRUE){
       cells=names(scrna@ident[scrna@ident==input$selclust])
-      plot1=TSNEPlot(object = scrna,cells.highlight=cells,group.by = "ident",no.legend = FALSE,do.label = F, do.return=T, pt.size = input$pointa2, colors.use=cpallette)
+      plot1=DimPlot(object = scrna,reduction.use=input$umapa,cells.highlight=cells,group.by = "ident",no.legend = FALSE,do.label = F, do.return=T, pt.size = input$pointa2, cols.use=cpallette)
     }else if(input$categorya2=="geneexp"){
-      plot1=FeaturePlot(object = scrna, features.plot = input$gene1a, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa2,no.legend = FALSE)
+      plot1=FeaturePlot(object = scrna,reduction.use=input$umapa, features.plot = input$gene1a, cols.use = c("grey", "blue"),do.return=T,pt.size = input$pointa2,no.legend = FALSE)
       plot1=eval(parse(text=paste("plot1$",input$gene1a,sep="")))
     }else if(input$categorya2 =="var" & input$tsnea2 %in% tsne & input$subsa==FALSE){
-      plot1=TSNEPlot(object = scrna,group.by = tsnea,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2,label.size = 7, colors.use=cpallette)
+      plot1=DimPlot(object = scrna,reduction.use=input$umapa,group.by = tsnea,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2,label.size = 7, cols.use=cpallette)
     }else if(input$categorya2 =="var" & input$tsnea2 %in% tsne & input$subsa==TRUE){
       t=paste("rownames(scrna@meta.data[scrna@meta.data$",input$tsnea2,"==\"",input$selclust2,"\",])",sep="")
       cells=eval(parse(text=t))
-      plot1=TSNEPlot(object = scrna,group.by = tsnea,cells.highlight=cells,no.legend = FALSE,do.label =F, do.return=T,pt.size = input$pointa2, colors.use=cpallette)
+      plot1=DimPlot(object = scrna,reduction.use=input$umapa,group.by = tsnea,cells.highlight=cells,no.legend = FALSE,do.label =F, do.return=T,pt.size = input$pointa2, cols.use=cpallette)
     }else if(input$categorya2 =="var" & input$tsnea2 %in% feature & input$subsa==FALSE){
-      plot1=FeaturePlot(object = scrna, features.plot = tsnea, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa2,no.legend = FALSE)
+      plot1=FeaturePlot(object = scrna,reduction.use=input$umapa, features.plot = tsnea, cols.use = c("grey", "blue"),do.return=T,pt.size = input$pointa2,no.legend = FALSE)
       plot1=eval(parse(text=paste("plot1$",tsnea,sep="")))
     }else if(input$categorya2 =="var" & input$tsnea2 %in% feature & input$subsa==TRUE){
       t=paste('rownames(scrna@meta.data[scrna@meta.data$',input$tsnea2, '>',input$tsnea2lim[1], ' & metadata$',input$tsnea2, '<', input$tsnea2lim[2],',])',sep="")
       cells=eval(parse(text=t))
-      plot1=FeaturePlot(object = scrna, features.plot = tsnea,cells.use = cells, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa2,no.legend = FALSE)
+      plot1=FeaturePlot(object = scrna,reduction.use=input$umapa, features.plot = tsnea,cells.use = cells, cols.use = c("grey", "blue"),do.return=T,pt.size = input$pointa2,no.legend = FALSE)
       plot1=eval(parse(text=paste("plot1$",tsnea,sep="")))
-    }
-    }else{
-      plot1=DimPlot(scrna, reduction.use = "umap", do.label = T,do.return=T,pt.size = input$pointa2,label.size = 5, cols.use=cpallette)
-    }
-    if(input$umapb==F){
+     }
+
     if(input$categoryb2 =="clust" & input$subsb==F){
-      plot2=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2,label.size = 7, colors.use=cpallette)
+      plot2=DimPlot(object = scrna,reduction.use=input$umapb,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2,label.size = 7, cols.use=cpallette)
     }else if(input$categoryb2 =="clust" & input$subsb==TRUE){
       cells=names(scrna@ident[scrna@ident==input$selclustb])
-      plot2=TSNEPlot(object = scrna,cells.highlight=cells,group.by = "ident",no.legend = FALSE,do.label = F, do.return=T, pt.size = input$pointa2, colors.use=cpallette)
+      plot2=DimPlot(object = scrna,reduction.use=input$umapb,cells.highlight=cells,group.by = "ident",no.legend = FALSE,do.label = F, do.return=T, pt.size = input$pointa2, cols.use=cpallette)
     }else if(input$categoryb2=="geneexp"){
-      plot2=FeaturePlot(object = scrna, features.plot = input$gene2a, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa2,no.legend = FALSE)
+      plot2=FeaturePlot(object = scrna,reduction.use=input$umapb, features.plot = input$gene2a, cols.use = c("grey", "blue"),do.return=T,pt.size = input$pointa2,no.legend = FALSE)
       plot2=eval(parse(text=paste("plot2$",input$gene2a,sep="")))
     }else if(input$categoryb2 =="var" & input$tsneb2 %in% tsne & input$subsb==F){
-      plot2=TSNEPlot(object = scrna,group.by = tsneb,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2,label.size = 7, colors.use=cpallette)
+      plot2=DimPlot(object = scrna,reduction.use=input$umapb,group.by = tsneb,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2,label.size = 7, cols.use=cpallette)
     }else if(input$categoryb2 =="var" & input$tsneb2 %in% tsne & input$subsb==TRUE){
       t=paste("rownames(scrna@meta.data[scrna@meta.data$",input$tsneb2,"==\"",input$selclustb2,"\",])",sep="")
       cells=eval(parse(text=t))
-      plot2=TSNEPlot(object = scrna,group.by = tsneb,cells.highlight=cells,no.legend = FALSE,do.label = F, do.return=T,pt.size = input$pointa2, colors.use=cpallette)
+      plot2=DimPlot(object = scrna,reduction.use=input$umapb,group.by = tsneb,cells.highlight=cells,no.legend = FALSE,do.label = F, do.return=T,pt.size = input$pointa2, cols.use=cpallette)
     }else if(input$categoryb2 =="var" & input$tsneb2 %in% feature & input$subsb==F){
-      plot2=FeaturePlot(object = scrna, features.plot = tsneb, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa2,no.legend = FALSE)
+      plot2=FeaturePlot(object = scrna,reduction.use=input$umapb, features.plot = tsneb, cols.use = c("grey", "blue"),do.return=T,pt.size = input$pointa2,no.legend = FALSE)
       plot2=eval(parse(text=paste("plot2$",tsneb,sep="")))
     }else if(input$categoryb2 =="var" & input$tsneb2 %in% feature & input$subsb==TRUE){
       t=paste('rownames(scrna@meta.data[scrna@meta.data$',input$tsneb2, '>',input$tsneb2lim[1], ' & metadata$',input$tsneb2, '<', input$tsneb2lim[2],',])',sep="")
       cells=eval(parse(text=t))
-      plot2=FeaturePlot(object = scrna, features.plot = tsneb,cells.use = cells, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa2,no.legend = FALSE)
+      plot2=FeaturePlot(object = scrna,reduction.use=input$umapb, features.plot = tsneb,cells.use = cells, cols.use = c("grey", "blue"),do.return=T,pt.size = input$pointa2,no.legend = FALSE)
       plot2=eval(parse(text=paste("plot2$",tsneb,sep="")))
     }
-    }else{
-      plot2=DimPlot(scrna, reduction.use = "umap", do.label = T,do.return=T,pt.size = input$pointa2,label.size = 5, cols.use=cpallette)
-    }
+    
     plot_grid(plot1,plot2)
 
   })
@@ -237,26 +231,20 @@ server <- function(input, output,session) {
     tsneb=input$tsneb
     feature=names(met[met==TRUE])
     tsne=names(met[met==FALSE])
-    if(input$umapdeg==F){
+    
     if(input$tsnea =="Cell.group"){
-      plot1=TSNEPlot(object = scrna,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa,label.size = 7,colors.use=cpallette) + theme(legend.position="bottom")
+      plot1=DimPlot(object = scrna,reduction.use=input$umapdeg,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa,label.size = 7,cols.use=cpallette) + theme(legend.position="bottom")
     }else if(input$tsnea %in% tsne){
-      plot1=TSNEPlot(object = scrna,group.by = tsnea,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa,label.size = 7,colors.use=cpallette)
+      plot1=DimPlot(object = scrna,reduction.use=input$umapdeg,group.by = tsnea,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa,label.size = 7,cols.use=cpallette) + theme(legend.position="bottom")
     }else if(input$tsnea %in% feature){
-      plot1=FeaturePlot(object = scrna, features.plot = tsnea, cols.use = c("grey", "blue"),reduction.use = "tsne",do.return=T,pt.size = input$pointa)
+      plot1=FeaturePlot(object = scrna, features.plot = tsnea, cols.use = c("grey", "blue"),reduction.use = input$umapdeg,do.return=T,pt.size = input$pointa)
       plot1=eval(parse(text=paste("plot1$`",tsnea,"`",sep="")))
     }
-    }else{
-      if(input$tsnea %in% tsne){
-        plot1=DimPlot(scrna, reduction.use = "umap",group.by = tsnea, do.label = T,do.return=T,pt.size = input$pointa, cols.use=cpallette)+ theme(legend.position="bottom")
-      }else{
-      plot1=DimPlot(scrna, reduction.use = "umap", do.label = T,do.return=T,pt.size = input$pointa, cols.use=cpallette)+ theme(legend.position="bottom")
-      }
-    }
+   
     markers=markergenes()
       s=input$markergenes_rows_selected # get  index of selected row from table
       markers=markers[s, ,drop=FALSE]
-      plot2=FeaturePlot(object = scrna, features.plot = rownames(markers), cols.use = c("grey","blue"),reduction.use = "tsne",
+      plot2=FeaturePlot(object = scrna, features.plot = rownames(markers), cols.use = c("grey","blue"),reduction.use = input$umapdeg,
                         no.legend = FALSE,pt.size = input$pointa,do.return = T)
       plot2=eval(parse(text=paste("plot2$",rownames(markers),sep="")))
       if(input$checkviolin ==T){

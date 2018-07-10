@@ -42,6 +42,10 @@ ui <- dashboardPage(
     tabItem(tabName = "tsneplot",
             box(title = "Compare tSNE plots",solidHeader = TRUE,width=12,status='primary',
                 fluidRow(
+                  column(6,selectInput("umapa","Dimensionality Reduction",c('uMap' = "umap",'tSNE' = "tsne"),selected = "umap")),
+                  column(6,selectInput("umapb","Dimensionality Reduction", c('uMap' = "umap",'tSNE' = "tsne"),selected = "umap"))
+                ),
+                fluidRow(
                   column(6,selectInput("categorya2", "Select one",c('Categories' = "var",'Cluster' = "clust", 'Gene Expression' = "geneexp"),selected = "clust")),
                   column(6,selectInput("categoryb2", "Select one",c('Categories' = "var",'Cluster' = "clust", 'Gene Expression' = "geneexp"),selected = "clust"))
                 ),
@@ -67,10 +71,7 @@ ui <- dashboardPage(
                   column(6,checkboxInput("subsa", label = "Check to subselect cells", value = FALSE)),
                   column(6,checkboxInput("subsb", label = "Check to subselect cells", value = FALSE))
                 ),
-                fluidRow(
-                  column(6,checkboxInput("umapa", label = "Check to view UMAP", value = FALSE)),
-                  column(6,checkboxInput("umapb", label = "Check to view UMAP", value = FALSE))
-                ),
+                
                 fluidRow(
                   column(6,conditionalPanel(
                     condition = "input.subsa ==true",uiOutput("subsaui")
@@ -110,7 +111,7 @@ ui <- dashboardPage(
             fluidRow(
               box(title = "Controls",solidHeader = TRUE,width=3,status='primary',
                 uiOutput("tsnea"),
-                checkboxInput("umapdeg", label = "Check to view UMAP", value = FALSE),
+                selectInput("umapdeg","Dimensionality Reduction",c('uMap' = "umap",'tSNE' = "tsne"),selected = "umap"),
                 sliderInput("pointa", "Point Size:",min = 0, max = 5, value = 1,step=.25),
                 checkboxInput("checkviolin", label = "Check to remove points from violin plot", value = TRUE),
                 #selectInput("categorya", "Select tSNE group to display",c('Categories' = "var",'Cell group' = "clust"),selected = "clust"),
