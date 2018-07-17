@@ -248,9 +248,9 @@ server <- function(input, output,session) {
                         no.legend = FALSE,pt.size = input$pointa,do.return = T)
       plot2=eval(parse(text=paste("plot2$",rownames(markers),sep="")))
       if(input$checkviolin ==T){
-      plot3=VlnPlot(object = scrna, features.plot = rownames(markers),group.by = input$setidentlist,do.return = T,x.lab.rot=TRUE,point.size.use=NA)
-      }else{plot3=VlnPlot(object = scrna, features.plot = rownames(markers),group.by = input$setidentlist,do.return = T,x.lab.rot=TRUE)}
-      plot4=RidgePlot(object = scrna, features.plot = rownames(markers),group.by = input$setidentlist,do.return = T,x.lab.rot=TRUE)
+      plot3=VlnPlot(object = scrna, features.plot = rownames(markers),group.by = input$setidentlist,do.return = T,x.lab.rot=TRUE,point.size.use=NA,cols.use=cpallette)
+      }else{plot3=VlnPlot(object = scrna, features.plot = rownames(markers),group.by = input$setidentlist,do.return = T,x.lab.rot=TRUE,cols.use=cpallette)}
+      plot4=RidgePlot(object = scrna, features.plot = rownames(markers),group.by = input$setidentlist,do.return = T,x.lab.rot=TRUE,cols.use=cpallette)
       
     
       row1=plot_grid(plot1,plot2,align = 'h', rel_heights = c(1, 1),axis="lr", nrow=1)
@@ -819,8 +819,8 @@ server <- function(input, output,session) {
      plot2=FeaturePlot(object = scrna, features.plot = input$geneid, cols.use = c("grey","blue"),reduction.use = "tsne",
                        no.legend = FALSE,pt.size = input$genenid_pointsize,do.return = T)
      plot2=eval(parse(text=paste("plot2$",input$geneid,sep="")))
-     plot3=VlnPlot(object = scrna, features.plot = input$geneid,group.by = "ident",do.return = T,x.lab.rot=TRUE)
-     plot4=RidgePlot(object = scrna, features.plot = input$geneid,group.by = "ident",do.return = T,x.lab.rot=TRUE)
+     plot3=VlnPlot(object = scrna, features.plot = input$geneid,group.by = "ident",do.return = T,x.lab.rot=TRUE,cols.use=cpallette)
+     plot4=RidgePlot(object = scrna, features.plot = input$geneid,group.by = "ident",do.return = T,x.lab.rot=TRUE,cols.use=cpallette)
      
      
      row1=plot_grid(plot2,align = 'h', rel_heights = c(1, 1),axis="lr", nrow=1)
