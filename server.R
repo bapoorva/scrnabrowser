@@ -246,7 +246,7 @@ server <- function(input, output,session) {
       markers=markers[s, ,drop=FALSE]
       plot2=FeaturePlot(object = scrna, features.plot = rownames(markers), cols.use = c("grey","blue"),reduction.use = input$umapdeg,
                         no.legend = FALSE,pt.size = input$pointa,do.return = T)
-      plot2=eval(parse(text=paste("plot2$",rownames(markers),sep="")))
+      plot2=eval(parse(text=paste("plot2$`",rownames(markers),"`",sep="")))
       if(input$checkviolin ==T){
       plot3=VlnPlot(object = scrna, features.plot = rownames(markers),group.by = input$setidentlist,do.return = T,x.lab.rot=TRUE,point.size.use=NA,cols.use=cpallette)
       }else{plot3=VlnPlot(object = scrna, features.plot = rownames(markers),group.by = input$setidentlist,do.return = T,x.lab.rot=TRUE,cols.use=cpallette)}
@@ -818,7 +818,7 @@ server <- function(input, output,session) {
      validate(need(input$geneid,"Enter the gene symbol"))
      plot2=FeaturePlot(object = scrna, features.plot = input$geneid, cols.use = c("grey","blue"),reduction.use = "tsne",
                        no.legend = FALSE,pt.size = input$genenid_pointsize,do.return = T)
-     plot2=eval(parse(text=paste("plot2$",input$geneid,sep="")))
+     plot2=eval(parse(text=paste("plot2$`",input$geneid,"`",sep="")))
      plot3=VlnPlot(object = scrna, features.plot = input$geneid,group.by = "ident",do.return = T,x.lab.rot=TRUE,cols.use=cpallette)
      plot4=RidgePlot(object = scrna, features.plot = input$geneid,group.by = "ident",do.return = T,x.lab.rot=TRUE,cols.use=cpallette)
      
