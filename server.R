@@ -844,4 +844,132 @@ server <- function(input, output,session) {
        plot(geplots())
        dev.off()
      })
+   
+   ###################################################
+   ###################################################
+   ########### Plot gene expression in clusters  #####
+   ###################################################
+   ###################################################
+   output$setvar = renderUI({
+     scrna=fileload()
+     metadata=as.data.frame(scrna@meta.data)
+     metadata=metadata %>% select(starts_with("var_"))
+     var=c(colnames(metadata))
+     selectInput("setvar","Choose category",var,"pick one")
+   })
+   
+   output$selectcluster = renderUI({
+     scrna=fileload()
+       options <- paste0("scrna@meta.data$",input$setvar,sep="")
+       options=unique(eval(parse(text=options)))
+       options=options[order(options)]
+     selectInput("selectcluster", "Select Cell group",options)
+   })
+   
+   clusts= reactive({
+     scrna=fileload()
+     scrna <- SetAllIdent(object = scrna, id = input$setvar)
+     avgexp=AverageExpression(object = scrna)
+     avgexp= avgexp %>% dplyr::select(input$selectcluster)
+     genes.use=rownames(avgexp)
+     data.use <- GetAssayData(object = scrna,slot = "data")
+     cells <- WhichCells(object = scrna, ident = input$selectcluster)
+     thresh.min=0
+     data.temp <- round(x = apply(X = data.use[genes.use, cells, drop = F],
+         MARGIN = 1,
+         FUN = function(x) {
+           return(sum(x > thresh.min) / length(x = x))
+         }),digits = 3)
+     names(data.temp)=genes.use
+     data.temp=as.data.frame(data.temp)
+     data.temp$id=rownames(data.temp)
+     avgexp$id=rownames(avgexp)
+     df=inner_join(avgexp,data.temp,by="id") 
+     rownames(df)=df$id
+     df= df %>% dplyr::select(input$selectcluster,data.temp) 
+     df=df[order(-df[,1],-df[,2]),]
+     colnames(df)= c("Average Expression","Percentage of cells expressed in")
+     df$max_avg=max(df$`Average Expression`)
+     df$min_avg=min(df$`Average Expression`)
+     return(df)
+   })
+   
+   clustable= reactive({
+     df=clusts()
+     df= df %>% dplyr::select(-max_avg:-min_avg)
+     df=df[df$`Percentage of cells expressed in` >input$pctslider[1] & df$`Percentage of cells expressed in` <input$pctslider[2],]
+     df=df[df$`Average Expression` >input$avgexpslider[1] & df$`Average Expression` <input$avgexpslider[2],]
+     return(df)
+   })
+   
+   output$pctslider <- renderUI({
+     withProgress(session = session, message = 'Loading...',detail = 'Please Wait...',{
+       df=clusts()
+       sliderInput("pctslider", "Percent Expressed:",min =0, max = 1, value =c(0.5,1))
+     })
+   })
+   
+   output$avgexpslider <- renderUI({
+     withProgress(session = session, message = 'Loading...',detail = 'Please Wait...',{
+       df=clusts()
+       min=unique(df$min_avg)
+       max=unique(df$max_avg)
+       mid=min+((max-min)/2)
+       sliderInput("avgexpslider", "Average Expression:",min = min, max = max, value = c(mid,max))
+     })
+   })
+   
+   output$clustable = DT::renderDataTable({
+     input$setvar
+     input$selectcluster
+     input$avgexpslider
+     input$pctslider
+     input$umapclust
+     withProgress(session = session, message = 'Loading...',detail = 'Please Wait...',{
+       DT::datatable(clustable(),
+                     extensions = c('Buttons','Scroller'),
+                     options = list(dom = 'Bfrtip',
+                                    searchHighlight = TRUE,
+                                    pageLength = 10,
+                                    lengthMenu = list(c(30, 50, 100, 150, 200, -1), c('30', '50', '100', '150', '200', 'All')),
+                                    scrollX = TRUE,
+                                    buttons = c('copy', 'print')
+                     ),rownames=TRUE,caption= "Cluster-wise Gene expression",selection = list(mode = 'single', selected =1),escape = F)
+     })
+   })
+   
+   
+   clustplots= reactive({
+     scrna=fileload()
+     tab=clustable()
+     s=input$clustable_rows_selected
+     tab=tab[s, ,drop=FALSE]
+     gene=rownames(tab)
+     plot1=DimPlot(object = scrna,reduction.use=input$umapclust,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointclust,label.size = 7, cols.use=cpallette)
+     plot2=FeaturePlot(object = scrna,reduction.use=input$umapclust, features.plot = gene, cols.use = c("grey", "blue"),do.return=T,pt.size = input$pointclust,no.legend = FALSE)
+     plot2=eval(parse(text=paste("plot2$`",gene,"`",sep="")))
+     plot_grid(plot1,plot2)
+   })
+   
+   output$clustplots = renderPlot({
+     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+       clustplots()
+     })
+   })
+   
+   output$downloadclustplot <- downloadHandler(
+     filename = function() {
+       paste0("Clustexp_plot.pdf",sep="")
+     },
+     content = function(file){
+       pdf(file,width=8,height = 13,useDingbats=FALSE)
+       plot(clustplot())
+       dev.off()
+     })
+   
+   output$downloadclustertab <- downloadHandler(
+     filename = function() { paste(input$selectcluster, '_cluster-wiseGeneExp.csv', sep='') },
+     content = function(file) {
+       write.csv(clustable(), file)
+     })
 }#end of server

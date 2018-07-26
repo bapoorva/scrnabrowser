@@ -5,7 +5,6 @@ library(plotly)
 library(d3heatmap)
 library(shinyjs)
 library(rglwidget)
-library(SPIA)
 library(reshape2)
 
 ui <- dashboardPage(
@@ -20,6 +19,7 @@ ui <- dashboardPage(
                      menuItem('Biplot', tabName = 'biplot', icon = icon('hand-o-right')),
                      menuItem('Differential Expression', tabName = 'deg', icon = icon('hand-o-right')),
                      menuItem('Gene Expression Plots', tabName = 'geplots', icon = icon('hand-o-right'),badgeLabel = "new", badgeColor = "green"),
+                     menuItem('Cluster Expression', tabName = 'clusplot', icon = icon('hand-o-right'),badgeLabel = "new", badgeColor = "blue"),
                      menuItem('Heatmap', tabName = 'heatmap', icon = icon('hand-o-right')),
                      menuItem('Ligand Receptor Pairs', tabName = 'ligrec', icon = icon('hand-o-right'))
                    )#end of sidebar menu
@@ -210,7 +210,27 @@ ui <- dashboardPage(
                   sliderInput("genenid_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25),
                   downloadButton('downloadplotge', 'Download Plot'))
             )#End FluidRow
-    )#end of geplot
+    ),#end of geplot
+    ######################################################################################################################################
+    tabItem(tabName = "clusplot",
+            box(title = "Gene Expression Plots",solidHeader = TRUE,width=9,status='primary',
+                plotOutput("clustplots", height = 700)
+            ),
+            fluidRow(
+              box(title = "Controls",solidHeader = TRUE,width=3,status='primary',
+                  selectInput("umapclust","Dimensionality Reduction",c('uMap' = "umap",'tSNE' = "tsne"),selected = "umap"),
+                  uiOutput("setvar"),
+                  uiOutput("selectcluster"),
+                  uiOutput("pctslider"),
+                  uiOutput("avgexpslider"),
+                  sliderInput("pointclust", "Point Size:",min = 0, max = 5, value = 1,step=.25),
+                  downloadButton('downloadclustplot', 'Download Plot'),
+                  downloadButton('downloadclustertab', 'Download Table'))
+            ),
+            box(title = "Table",solidHeader = TRUE,width=9,status='primary',
+                DT::dataTableOutput('clustable')
+            )#End FluidRow
+    )#end of clusplot
     )#end of tabitems
   )#end of dashboard body
 )#end of dashboard page
