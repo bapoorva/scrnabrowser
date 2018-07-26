@@ -945,7 +945,7 @@ server <- function(input, output,session) {
      s=input$clustable_rows_selected
      tab=tab[s, ,drop=FALSE]
      gene=rownames(tab)
-     plot1=DimPlot(object = scrna,reduction.use=input$umapclust,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointclust,label.size = 7, cols.use=cpallette)
+     plot1=DimPlot(object = scrna,reduction.use=input$umapclust,group.by = input$setvar,no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointclust,label.size = 7, cols.use=cpallette)
      plot2=FeaturePlot(object = scrna,reduction.use=input$umapclust, features.plot = gene, cols.use = c("grey", "blue"),do.return=T,pt.size = input$pointclust,no.legend = FALSE)
      plot2=eval(parse(text=paste("plot2$`",gene,"`",sep="")))
      plot_grid(plot1,plot2)
@@ -963,7 +963,7 @@ server <- function(input, output,session) {
      },
      content = function(file){
        pdf(file,width=8,height = 13,useDingbats=FALSE)
-       plot(clustplot())
+       plot(clustplots())
        dev.off()
      })
    
