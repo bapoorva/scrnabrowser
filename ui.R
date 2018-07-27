@@ -18,8 +18,11 @@ ui <- dashboardPage(
                      menuItem('Compare tSNE Plots', tabName = 'tsneplot', icon = icon('hand-o-right')),
                      menuItem('Biplot', tabName = 'biplot', icon = icon('hand-o-right')),
                      menuItem('Differential Expression', tabName = 'deg', icon = icon('hand-o-right')),
-                     menuItem('Gene Expression Plots', tabName = 'geplots', icon = icon('hand-o-right'),badgeLabel = "new", badgeColor = "green"),
-                     menuItem('Cluster Expression', tabName = 'clusplot', icon = icon('hand-o-right'),badgeLabel = "new", badgeColor = "blue"),
+                     menuItem('Gene Expression Plots', tabName = 'geplot', icon = icon('hand-o-right'),
+                              menuSubItem("Gene Expression Plots", tabName = "geplots"),
+                              menuSubItem('Cluster-wise Gene Expression', tabName = 'clusplot')
+                              ),
+                     
                      menuItem('Heatmap', tabName = 'heatmap', icon = icon('hand-o-right')),
                      menuItem('Ligand Receptor Pairs', tabName = 'ligrec', icon = icon('hand-o-right'))
                    )#end of sidebar menu
