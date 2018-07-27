@@ -973,10 +973,7 @@ server <- function(input, output,session) {
      plot1=DimPlot(object = scrna,reduction.use=input$umapclust,group.by = input$setvar,no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointclust,label.size = 7, cols.use=cpallette)
      plot2=FeaturePlot(object = scrna,reduction.use=input$umapclust, features.plot = gene, cols.use = c("grey", "blue"),do.return=T,pt.size = input$pointclust,no.legend = FALSE)
      plot2=eval(parse(text=paste("plot2$`",gene,"`",sep="")))
-     p1=ggplotly(plot1)
-     p2=ggplotly(plot2)
-     #plot_grid(plot1,plot2)
-     subplot(p1,p2)
+     plot_grid(plot1,plot2)
    })
    
    output$clustplots = renderPlot({
