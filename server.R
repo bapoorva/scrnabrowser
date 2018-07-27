@@ -203,6 +203,31 @@ server <- function(input, output,session) {
   
   ###################################################
   ###################################################
+  ########### Interactive Tsne plots  ###############
+  ###################################################
+  ###################################################
+  output$setcategory = renderUI({
+    scrna=fileload()
+    metadata=as.data.frame(scrna@meta.data)
+    metadata=metadata %>% select(starts_with("var_"))
+    var=c(colnames(metadata))
+    selectInput("setcategory","Choose category",var,"pick one")
+  })
+  
+  intertsne = reactive({
+    scrna=fileload()
+    plot1=DimPlot(object = scrna,reduction.use=input$umapint,group.by = input$setcategory,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$umap_pointsize,label.size = 5, cols.use=cpallette)
+    plot=ggplotly(plot1)
+    return(plot)
+  })
+  
+  output$intertsne = renderPlotly({
+    withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+      intertsne()
+    })
+  })
+  ###################################################
+  ###################################################
   ####### Compare Tsne plots with controls  ##########
   ###################################################
   ###################################################
@@ -816,7 +841,7 @@ server <- function(input, output,session) {
    geplots = reactive({
      scrna=fileload()
      validate(need(input$geneid,"Enter the gene symbol"))
-     plot2=FeaturePlot(object = scrna, features.plot = input$geneid, cols.use = c("grey","blue"),reduction.use = "tsne",
+     plot2=FeaturePlot(object = scrna, features.plot = input$geneid, cols.use = c("grey","blue"),reduction.use = input$umapge,
                        no.legend = FALSE,pt.size = input$genenid_pointsize,do.return = T)
      plot2=eval(parse(text=paste("plot2$`",input$geneid,"`",sep="")))
      plot3=VlnPlot(object = scrna, features.plot = input$geneid,group.by = "ident",do.return = T,x.lab.rot=TRUE,cols.use=cpallette)
@@ -905,7 +930,7 @@ server <- function(input, output,session) {
    output$pctslider <- renderUI({
      withProgress(session = session, message = 'Loading...',detail = 'Please Wait...',{
        df=clusts()
-       sliderInput("pctslider", "Percent Expressed:",min =0, max = 1, value =c(0.5,1))
+       sliderInput("pctslider", "Percent Expressed:",min =0, max = 1, value =c(0.1,1))
      })
    })
    
@@ -914,8 +939,7 @@ server <- function(input, output,session) {
        df=clusts()
        min=unique(df$min_avg)
        max=unique(df$max_avg)
-       mid=min+((max-min)/2)
-       sliderInput("avgexpslider", "Average Expression:",min = min, max = max, value = c(mid,max))
+       sliderInput("avgexpslider", "Average Expression:",min = min, max = max, value = c(min,max))
      })
    })
    
@@ -955,7 +979,7 @@ server <- function(input, output,session) {
      subplot(p1,p2)
    })
    
-   output$clustplots = renderPlotly({
+   output$clustplots = renderPlot({
      withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
        clustplots()
      })

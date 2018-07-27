@@ -15,13 +15,16 @@ ui <- dashboardPage(
                    sidebarMenu(
                      menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
                      uiOutput("projects"),
-                     menuItem('Compare tSNE Plots', tabName = 'tsneplot', icon = icon('hand-o-right')),
+                     menuItem('tSNE Plots', tabName = 'tplot', icon = icon('hand-o-right'),
+                              menuSubItem("Compare tSNE Plots", tabName = "tsneplot"),
+                              menuSubItem("Interactive tSNE Plot", tabName = "intertsne")
+                              ),
                      menuItem('Biplot', tabName = 'biplot', icon = icon('hand-o-right')),
                      menuItem('Differential Expression', tabName = 'deg', icon = icon('hand-o-right')),
                      menuItem('Gene Expression Plots', tabName = 'geplot', icon = icon('hand-o-right'),
                               menuSubItem("Gene Expression Plots", tabName = "geplots"),
                               menuSubItem('Cluster-wise Gene Expression', tabName = 'clusplot'),
-                              menuSubItem('Visualize Markers', tabName = 'dotplot')
+                              menuSubItem('Gene-Cellgroup Dotplot', tabName = 'dotplot')
                               ),
                      
                      menuItem('Heatmap', tabName = 'heatmap', icon = icon('hand-o-right')),
@@ -88,6 +91,18 @@ ui <- dashboardPage(
                 downloadButton('downloadtsneplot', 'Download tSNE plot')
             )
     ),#end of degtab
+    ###################################################################################################################################### 
+    tabItem(tabName = "intertsne",
+            fluidRow(
+              box(plotlyOutput("intertsne", height = 600),width=8, status='primary',title = "Interactive tSNE Plot",solidHeader = TRUE),
+              box(
+                title = "Controls",solidHeader = TRUE,width=4,status='primary',
+                selectInput("umapint","Dimensionality Reduction",c('uMap' = "umap",'tSNE' = "tsne"),selected = "umap"),
+                uiOutput("setcategory"),
+                sliderInput("umap_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25)
+              )
+            )
+    ),#endbigeneplotTab
     ###################################################################################################################################### 
     
     tabItem(tabName = "biplot",
@@ -210,6 +225,7 @@ ui <- dashboardPage(
 
             fluidRow(
               box(title = "Controls",solidHeader = TRUE,width=3,status='primary',
+                  selectInput("umapge","Dimensionality Reduction",c('uMap' = "umap",'tSNE' = "tsne"),selected = "umap"),
                   textInput("geneid", label = "Enter Gene",value = ""),
                   sliderInput("genenid_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25),
                   downloadButton('downloadplotge', 'Download Plot'))
@@ -218,7 +234,7 @@ ui <- dashboardPage(
     ######################################################################################################################################
     tabItem(tabName = "clusplot",
             box(title = "Gene Expression Plots",solidHeader = TRUE,width=9,status='primary',
-                plotlyOutput("clustplots", height = 700)
+                plotOutput("clustplots", height = 700)
             ),
             fluidRow(
               box(title = "Controls",solidHeader = TRUE,width=3,status='primary',
