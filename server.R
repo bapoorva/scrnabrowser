@@ -976,4 +976,35 @@ server <- function(input, output,session) {
      content = function(file) {
        write.csv(clustable(), file)
      })
+   
+   ###################################################
+   ###################################################
+   ################### Plot dot plot ################
+   ###################################################
+   ###################################################
+   
+   output$setdotvar = renderUI({
+     scrna=fileload()
+     metadata=as.data.frame(scrna@meta.data)
+     metadata=metadata %>% select(starts_with("var_"))
+     var=c(colnames(metadata))
+     selectInput("setdotvar","Choose category",var,"pick one")
+   })
+   
+   dotplot= reactive({
+     scrna=fileload()
+         validate(
+           need(input$genelistfile, "Please Upload Genelist")
+         )
+     file=input$genelistfile
+     df=fread(file$datapath,header = FALSE) #get complete gene list as string
+     genes=as.vector(df$V1)
+    g1=DotPlot(object = scrna, genes.plot = genes, plot.legend = TRUE,group.by=input$setdotvar,do.return=TRUE) 
+    return(g1) 
+   })
+   output$dotplot = renderPlot({
+     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+       dotplot()
+     })
+   })
 }#end of server

@@ -20,7 +20,8 @@ ui <- dashboardPage(
                      menuItem('Differential Expression', tabName = 'deg', icon = icon('hand-o-right')),
                      menuItem('Gene Expression Plots', tabName = 'geplot', icon = icon('hand-o-right'),
                               menuSubItem("Gene Expression Plots", tabName = "geplots"),
-                              menuSubItem('Cluster-wise Gene Expression', tabName = 'clusplot')
+                              menuSubItem('Cluster-wise Gene Expression', tabName = 'clusplot'),
+                              menuSubItem('Visualize Markers', tabName = 'dotplot')
                               ),
                      
                      menuItem('Heatmap', tabName = 'heatmap', icon = icon('hand-o-right')),
@@ -233,7 +234,19 @@ ui <- dashboardPage(
             box(title = "Table",solidHeader = TRUE,width=9,status='primary',
                 DT::dataTableOutput('clustable')
             )#End FluidRow
-    )#end of clusplot
+    ),#end of clusplot
+    ######################################################################################################################################
+    tabItem(tabName = "dotplot",
+            box(title = "Controls",solidHeader = TRUE,width=12,status='primary',
+                fluidRow(
+                  column(6,fileInput('genelistfile', 'Upload Text File',accept=c('text/csv','text/comma-separated-values,text/plain','.txt'))),
+                  column(6,uiOutput("setdotvar"))
+                )
+            ),
+            box(title = "Dot Plot",solidHeader = TRUE,width=12,status='primary',
+                plotOutput("dotplot", height = 500)
+            )
+    )#end of dotplot
     )#end of tabitems
   )#end of dashboard body
 )#end of dashboard page
