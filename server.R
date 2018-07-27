@@ -987,7 +987,7 @@ server <- function(input, output,session) {
        paste0("Clustexp_plot.pdf",sep="")
      },
      content = function(file){
-       pdf(file,width=8,height = 13,useDingbats=FALSE)
+       pdf(file,width=13,height = 9,useDingbats=FALSE)
        plot(clustplots())
        dev.off()
      })
