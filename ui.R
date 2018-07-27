@@ -214,7 +214,7 @@ ui <- dashboardPage(
     ######################################################################################################################################
     tabItem(tabName = "clusplot",
             box(title = "Gene Expression Plots",solidHeader = TRUE,width=9,status='primary',
-                plotOutput("clustplots", height = 700)
+                plotlyOutput("clustplots", height = 700)
             ),
             fluidRow(
               box(title = "Controls",solidHeader = TRUE,width=3,status='primary',

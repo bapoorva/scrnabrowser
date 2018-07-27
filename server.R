@@ -19,7 +19,7 @@ library(data.table)
 cpallette=c("#64B2CE", "#DA5724", "#74D944", "#CE50CA", "#C0717C", "#CBD588", "#5F7FC7",
             "#673770", "#D3D93E", "#38333E", "#508578", "#D7C1B1", "#689030", "#AD6F3B", "#CD9BCD",
             "#D14285", "#6DDE88", "#652926", "#7FDCC0", "#C84248", "#8569D5", "#5E738F", "#D1A33D",
-            "#8A7C64", "#599861")
+            "#8A7C64", "#599861","#000099","#FFCC66","#99CC33","#CC99CC","#666666")
 server <- function(input, output,session) {
   
   ###################################################
@@ -878,7 +878,7 @@ server <- function(input, output,session) {
      data.temp <- round(x = apply(X = data.use[genes.use, cells, drop = F],
          MARGIN = 1,
          FUN = function(x) {
-           return(sum(x > thresh.min) / length(x = x))
+           return(sum(x > thresh.min) / length(x = cells))
          }),digits = 3)
      names(data.temp)=genes.use
      data.temp=as.data.frame(data.temp)
@@ -945,13 +945,17 @@ server <- function(input, output,session) {
      s=input$clustable_rows_selected
      tab=tab[s, ,drop=FALSE]
      gene=rownames(tab)
+     #cells <- WhichCells(object = scrna, ident = input$selectcluster)
      plot1=DimPlot(object = scrna,reduction.use=input$umapclust,group.by = input$setvar,no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointclust,label.size = 7, cols.use=cpallette)
      plot2=FeaturePlot(object = scrna,reduction.use=input$umapclust, features.plot = gene, cols.use = c("grey", "blue"),do.return=T,pt.size = input$pointclust,no.legend = FALSE)
      plot2=eval(parse(text=paste("plot2$`",gene,"`",sep="")))
-     plot_grid(plot1,plot2)
+     p1=ggplotly(plot1)
+     p2=ggplotly(plot2)
+     #plot_grid(plot1,plot2)
+     subplot(p1,p2)
    })
    
-   output$clustplots = renderPlot({
+   output$clustplots = renderPlotly({
      withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
        clustplots()
      })
