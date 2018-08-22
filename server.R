@@ -20,6 +20,10 @@ cpallette=c("#64B2CE", "#DA5724", "#74D944", "#CE50CA", "#C0717C", "#CBD588", "#
             "#673770", "#D3D93E", "#38333E", "#508578", "#D7C1B1", "#689030", "#AD6F3B", "#CD9BCD",
             "#D14285", "#6DDE88", "#652926", "#7FDCC0", "#C84248", "#8569D5", "#5E738F", "#D1A33D",
             "#8A7C64", "#599861","#000099","#FFCC66","#99CC33","#CC99CC","#666666")
+
+my_username <- c("Sealelab","Morriseylab","Jainlab")
+my_password <- c("pseale@999#","emorrisey$123","rjain@2018")
+
 server <- function(input, output,session) {
   
   ###################################################
@@ -27,10 +31,60 @@ server <- function(input, output,session) {
   ####### Display project list and load data  #######
   ###################################################
   ###################################################
+   values <- reactiveValues(authenticated = FALSE)
+  
+   # Return the UI for a modal dialog with data selection input. If 'failed'
+   # is TRUE, then display a message that the previous value was invalid.
+   dataModal <- function(failed = FALSE) {
+     modalDialog(
+       textInput("username", "Username:"),
+       passwordInput("password", "Password:"),
+       footer = tagList(
+         # modalButton("Cancel"),
+         actionButton("ok", "OK")
+       )
+     )
+   }
+   
+   # Show modal when button is clicked.
+   # This `observe` is suspended only whith right user credential
+   
+   obs1 <- observe({
+     showModal(dataModal())
+   })
+  
+  # When OK button is pressed, attempt to authenticate. If successful,
+  # remove the modal.
+  obs2 <- observe({
+    req(input$ok)
+    isolate({
+      Username <- input$username
+      Password <- input$password
+    })
+    Id.username <- which(my_username == Username)
+    Id.password <- which(my_password == Password)
+    if (length(Id.username) > 0 & length(Id.password) > 0) {
+      if (Id.username == Id.password) {
+        Logged <<- TRUE
+        values$authenticated <- TRUE
+        obs1$suspend()
+        removeModal()
+
+      } else {
+        values$authenticated <- FALSE
+      }
+    }
+  })
+  # output$dataInfo <- renderPrint({
+  #   if (values$authenticated) "OK!!!!!"
+  #   else "You are NOT authenticated"
+  # })
   
   #Read the parameter file
   readexcel = reactive({
-    file = read.csv("data/param.csv")
+     user=input$username
+     file = read.csv(paste("data/",user,"_param.csv",sep=""))
+    #file = read.csv("data/Morriseylab_param.csv")
   })
   
   #Get Project list and populate drop-down
@@ -42,7 +96,9 @@ server <- function(input, output,session) {
   
   #display project list in Dashboard
   output$datasetTable<- renderTable({
-    read.csv('data/param.csv',stringsAsFactors = F)
+    user=input$username
+    read.csv(paste("data/",user,"_param.csv",sep=""))
+    #read.csv('data/param.csv',stringsAsFactors = F)
   }, digits = 1)
   
   #Load Rdata
@@ -206,6 +262,14 @@ server <- function(input, output,session) {
   ########### Interactive Tsne plots  ###############
   ###################################################
   ###################################################
+  output$intervar = renderUI({
+    scrna=fileload()
+    metadata=as.data.frame(scrna@meta.data) 
+    #metadata=metadata %>% select(starts_with("var"))
+    var=colnames(metadata)
+    selectInput("intervar","Select a Variable",var,"pick one")
+  })
+  
   output$setcategory = renderUI({
     scrna=fileload()
     metadata=as.data.frame(scrna@meta.data)
@@ -224,6 +288,35 @@ server <- function(input, output,session) {
   output$intertsne = renderPlotly({
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
       intertsne()
+    })
+  })
+  
+  intergene = reactive({
+    scrna=fileload()
+    metadata=as.data.frame(scrna@meta.data)
+    met= sapply(metadata,is.numeric)
+    #metadata=metadata %>% select(starts_with("var"))
+    tsnea=input$intervar
+    feature=names(met[met==TRUE])
+    #feature=c("nGene","nUMI","percent.mito","S.Score","G2M.Score","var.ratio.pca")
+    tsne=names(met[met==FALSE])
+    
+    if(input$intercat=="geneexp"){
+      plot1=FeaturePlot(object = scrna,reduction.use=input$umapint, features.plot = input$geneinter, cols.use = c("grey", "blue"),do.return=T,pt.size = input$umap_pointsize,no.legend = FALSE)
+      plot1=eval(parse(text=paste("plot1$",input$geneinter,sep="")))
+    }else if(input$intercat =="var" & tsnea %in% tsne){
+      plot1=DimPlot(object = scrna,reduction.use=input$umapint,group.by = tsnea,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$umap_pointsize,label.size = 7, cols.use=cpallette)
+    }else if(input$intercat =="var" & tsnea %in% feature){
+      plot1=FeaturePlot(object = scrna,reduction.use=input$umapint, features.plot = tsnea, cols.use = c("grey", "blue"),do.return=T,pt.size = input$umap_pointsize,no.legend = FALSE)
+      plot1=eval(parse(text=paste("plot1$",tsnea,sep="")))
+    }
+    plot=ggplotly(plot1)
+    return(plot)
+  })
+  
+  output$intergene = renderPlotly({
+    withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+      intergene()
     })
   })
   ###################################################

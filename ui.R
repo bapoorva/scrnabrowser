@@ -17,14 +17,26 @@ ui <- dashboardPage(
                      uiOutput("projects"),
                      menuItem('tSNE Plots', tabName = 'tplot', icon = icon('hand-o-right'),
                               menuSubItem("Compare tSNE Plots", tabName = "tsneplot"),
-                              menuSubItem("Interactive tSNE Plot", tabName = "intertsne")
+                              menuSubItem("Interactive tSNE/uMap Plot", tabName = "intertsne")
                               ),
                      menuItem('Biplot', tabName = 'biplot', icon = icon('hand-o-right')),
                      menuItem('Differential Expression', tabName = 'deg', icon = icon('hand-o-right')),
                      menuItem('Gene Expression Plots', tabName = 'geplot', icon = icon('hand-o-right'),
-                              menuSubItem("Gene Expression Plots", tabName = "geplots"),
-                              menuSubItem('Cluster-wise Gene Expression', tabName = 'clusplot'),
-                              menuSubItem('Gene-Cellgroup Dotplot', tabName = 'dotplot')
+                              fluidRow(
+                                column(1,h4("")),
+                                column(6,menuSubItem("Gene Expression Plots", tabName = "geplots")),
+                                column(2,bsButton("q1", label = "", icon = icon("question"), style = "info", size = "extra-small"))),
+                              bsTooltip(id = "q1", title = "Enter Gene name and view tSNE, violin and Ridge plots",placement = "right",trigger = "hover", options = NULL),
+                              fluidRow(
+                                column(1,h4("")),
+                                column(6,menuSubItem('Cluster-wise Gene Expression', tabName = 'clusplot')),
+                                column(2,bsButton("q2", label = "", icon = icon("question"), style = "info", size = "extra-small"))),
+                              bsTooltip(id = "q2", title = "View tSNE/umap of genes expressed in a Cellgroup",placement = "right",trigger = "hover", options = NULL),
+                              fluidRow(
+                                column(1,h4("")),
+                              column(6,menuSubItem('Gene-Cellgroup Dotplot', tabName = 'dotplot')),
+                              column(2,bsButton("q3", label = "", icon = icon("question"), style = "info", size = "extra-small"))),
+                              bsTooltip(id = "q3", title = "Upload genelist to view the gene expression across cellgroups as a dotplot",placement = "right",trigger = "hover", options = NULL)
                               ),
                      
                      menuItem('Heatmap', tabName = 'heatmap', icon = icon('hand-o-right')),
@@ -91,16 +103,30 @@ ui <- dashboardPage(
                 downloadButton('downloadtsneplot', 'Download tSNE plot')
             )
     ),#end of degtab
+    
     ###################################################################################################################################### 
     tabItem(tabName = "intertsne",
             fluidRow(
-              box(plotlyOutput("intertsne", height = 600),width=8, status='primary',title = "Interactive tSNE Plot",solidHeader = TRUE),
               box(
-                title = "Controls",solidHeader = TRUE,width=4,status='primary',
-                selectInput("umapint","Dimensionality Reduction",c('uMap' = "umap",'tSNE' = "tsne"),selected = "umap"),
-                uiOutput("setcategory"),
+                title = "Controls",solidHeader = TRUE,width=12,status='primary',
+                fluidRow(
+                  column(6,selectInput("umapint","Dimensionality Reduction",c('uMap' = "umap",'tSNE' = "tsne"),selected = "umap")),
+                  column(6,selectInput("intercat", "Select one",c('Categories' = "var",'Gene Expression' = "geneexp"),selected = "geneexp"))),
+                fluidRow(
+                  column(6,uiOutput("setcategory")),
+                  column(6,conditionalPanel(
+                    condition = "input.intercat == 'var'",
+                    uiOutput("intervar")
+                  ),
+                  conditionalPanel(
+                    condition = "input.intercat == 'geneexp'",textInput("geneinter", label = "Gene Name",value = "Axin2")
+                  )
+                  )),
                 sliderInput("umap_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25)
-              )
+              ),
+              box(plotlyOutput("intertsne", height = 600),width=6, status='primary',title = "Interactive tSNE/uMap Plot",solidHeader = TRUE),
+              box(plotlyOutput("intergene", height = 600),width=6, status='primary',title = "Interactive Gene Plot",solidHeader = TRUE)
+              
             )
     ),#endbigeneplotTab
     ###################################################################################################################################### 
