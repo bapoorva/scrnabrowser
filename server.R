@@ -21,8 +21,8 @@ cpallette=c("#64B2CE", "#DA5724", "#74D944", "#CE50CA", "#C0717C", "#CBD588", "#
             "#D14285", "#6DDE88", "#652926", "#7FDCC0", "#C84248", "#8569D5", "#5E738F", "#D1A33D",
             "#8A7C64", "#599861","#000099","#FFCC66","#99CC33","#CC99CC","#666666")
 
-my_username <- c("Sealelab","Morriseylab","Jainlab")
-my_password <- c("pseale@999#","emorrisey$123","rjain@2018")
+my_username <- c("Sealelab","Morriseylab","Jainlab","allusers")
+my_password <- c("pseale@999#","emorrisey$123","rjain@2018","allusers@1")
 
 server <- function(input, output,session) {
   
