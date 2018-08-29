@@ -6,7 +6,7 @@ library(d3heatmap)
 library(shinyjs)
 library(rglwidget)
 library(reshape2)
-
+options(shiny.sanitize.errors = TRUE)
 ui <- dashboardPage(
   dashboardHeader(title = "sEuRaT",titleWidth = 350),
   dashboardSidebar(width = 350,

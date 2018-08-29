@@ -292,6 +292,7 @@ server <- function(input, output,session) {
   })
   
   intergene = reactive({
+    pdf(NULL)
     scrna=fileload()
     metadata=as.data.frame(scrna@meta.data)
     met= sapply(metadata,is.numeric)
