@@ -63,8 +63,8 @@ ui <- dashboardPage(
     tabItem(tabName = "tsneplot",
             box(title = "Compare tSNE plots",solidHeader = TRUE,width=12,status='primary',
                 fluidRow(
-                  column(6,selectInput("umapa","Dimensionality Reduction",c('uMap' = "umap",'tSNE' = "tsne"),selected = "umap")),
-                  column(6,selectInput("umapb","Dimensionality Reduction", c('uMap' = "umap",'tSNE' = "tsne"),selected = "umap"))
+                  column(6,uiOutput("umapa")),
+                  column(6,uiOutput("umapb"))
                 ),
                 fluidRow(
                   column(6,selectInput("categorya2", "Select one",c('Categories' = "var",'Cluster' = "clust", 'Gene Expression' = "geneexp"),selected = "clust")),
@@ -112,7 +112,7 @@ ui <- dashboardPage(
               box(
                 title = "Controls",solidHeader = TRUE,width=12,status='primary',
                 fluidRow(
-                  column(6,selectInput("umapint","Dimensionality Reduction",c('uMap' = "umap",'tSNE' = "tsne"),selected = "umap")),
+                  column(6,uiOutput("umapint")),
                   column(6,selectInput("intercat", "Select one",c('Categories' = "var",'Gene Expression' = "geneexp"),selected = "geneexp"))),
                 fluidRow(
                   column(6,uiOutput("setcategory")),
@@ -159,7 +159,7 @@ ui <- dashboardPage(
             fluidRow(
               box(title = "Controls",solidHeader = TRUE,width=3,status='primary',
                 uiOutput("tsnea"),
-                selectInput("umapdeg","Dimensionality Reduction",c('uMap' = "umap",'tSNE' = "tsne"),selected = "umap"),
+                uiOutput("umapdeg"),
                 sliderInput("pointa", "Point Size:",min = 0, max = 5, value = 1,step=.25),
                 checkboxInput("checkviolin", label = "Check to remove points from violin plot", value = TRUE),
                 #selectInput("categorya", "Select tSNE group to display",c('Categories' = "var",'Cell group' = "clust"),selected = "clust"),
@@ -254,7 +254,7 @@ ui <- dashboardPage(
 
             fluidRow(
               box(title = "Controls",solidHeader = TRUE,width=3,status='primary',
-                  selectInput("umapge","Dimensionality Reduction",c('uMap' = "umap",'tSNE' = "tsne"),selected = "umap"),
+                  uiOutput("umapge"),
                   textInput("geneid", label = "Enter Gene",value = ""),
                   sliderInput("genenid_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25),
                   downloadButton('downloadplotge', 'Download Plot'))
@@ -267,7 +267,7 @@ ui <- dashboardPage(
             ),
             fluidRow(
               box(title = "Controls",solidHeader = TRUE,width=3,status='primary',
-                  selectInput("umapclust","Dimensionality Reduction",c('uMap' = "umap",'tSNE' = "tsne"),selected = "umap"),
+                  uiOutput("umapclust"),
                   uiOutput("setvar"),
                   uiOutput("selectcluster"),
                   uiOutput("pctslider"),
@@ -304,8 +304,8 @@ ui <- dashboardPage(
                 fluidRow(
                 column(6,uiOutput("ndim")),
                 column(6,sliderInput("ngenes", "Number of genes:",min = 10, max = 50, value = 10,step=5))),
-                plotOutput("vizplot", height = 1500),
-                downloadButton('downloadvizplot', 'Download Plot')
+                plotOutput("vizplot", height = 1500)
+                #downloadButton('downloadvizplot', 'Download Plot')
             )#End box
             )#end of pca
     )#end of tabitems

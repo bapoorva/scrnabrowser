@@ -176,7 +176,18 @@ server <- function(input, output,session) {
       validate(need(input$categoryb2!="geneexp","Cannot subselect gene expression values"))
     }
   })
-
+  
+  output$umapa = renderUI({
+    scrna=fileload()
+    dimr=names(scrna@dr)
+    selectInput("umapa","Dimensionality Reduction",dimr,selected = "tsne")
+  })
+  
+  output$umapb = renderUI({
+    scrna=fileload()
+    dimr=names(scrna@dr)
+    selectInput("umapb","Dimensionality Reduction",dimr,selected = "tsne")
+  })
   
   comptsne2 = reactive({
     scrna=fileload()
@@ -279,6 +290,12 @@ server <- function(input, output,session) {
     selectInput("setcategory","Choose category",var,"pick one")
   })
   
+  output$umapint = renderUI({
+    scrna=fileload()
+    dimr=names(scrna@dr)
+    selectInput("umapint","Dimensionality Reduction",dimr,selected = "tsne")
+  })
+  
   intertsne = reactive({
     scrna=fileload()
     plot1=DimPlot(object = scrna,reduction.use=input$umapint,group.by = input$setcategory,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$umap_pointsize,label.size = 5, cols.use=cpallette)
@@ -340,6 +357,12 @@ server <- function(input, output,session) {
     #metadata=metadata %>% select(starts_with("var"))
     var=colnames(metadata)
     selectInput("tsneb","Select a Variable",var,"pick one")
+  })
+  
+  output$umapdeg = renderUI({
+    scrna=fileload()
+    dimr=names(scrna@dr)
+    selectInput("umapdeg","Dimensionality Reduction",dimr,selected = "tsne")
   })
   
   comptsne = reactive({
@@ -946,6 +969,12 @@ output$downloadbiplot <- downloadHandler(
    ########### Plot gene expression  ################
    ###################################################
    ###################################################
+   output$umapge = renderUI({
+     scrna=fileload()
+     dimr=names(scrna@dr)
+     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+     selectInput("umapge","Dimensionality Reduction",dimr,selected = "tsne")})
+   })
    
    geplots = reactive({
      scrna=fileload()
@@ -984,6 +1013,13 @@ output$downloadbiplot <- downloadHandler(
    ########### Plot gene expression in clusters  #####
    ###################################################
    ###################################################
+   output$umapclust = renderUI({
+     scrna=fileload()
+     dimr=names(scrna@dr)
+     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+     selectInput("umapclust","Dimensionality Reduction",dimr,selected = "tsne")})
+   })
+   
    output$setvar = renderUI({
      scrna=fileload()
      metadata=as.data.frame(scrna@meta.data)
