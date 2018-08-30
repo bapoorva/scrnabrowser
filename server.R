@@ -32,7 +32,7 @@ server <- function(input, output,session) {
   ###################################################
   ###################################################
    values <- reactiveValues(authenticated = FALSE)
-  
+
    # Return the UI for a modal dialog with data selection input. If 'failed'
    # is TRUE, then display a message that the previous value was invalid.
    dataModal <- function(failed = FALSE) {
@@ -45,14 +45,14 @@ server <- function(input, output,session) {
        )
      )
    }
-   
+
    # Show modal when button is clicked.
    # This `observe` is suspended only whith right user credential
-   
+
    obs1 <- observe({
      showModal(dataModal())
    })
-  
+
   # When OK button is pressed, attempt to authenticate. If successful,
   # remove the modal.
   obs2 <- observe({
@@ -79,12 +79,12 @@ server <- function(input, output,session) {
   #   if (values$authenticated) "OK!!!!!"
   #   else "You are NOT authenticated"
   # })
-  
+
   #Read the parameter file
   readexcel = reactive({
      user=input$username
      file = read.csv(paste("data/",user,"_param.csv",sep=""))
-    #file = read.csv("data/Morriseylab_param.csv")
+    #file = read.csv("data/allusers_param.csv")
   })
   
   #Get Project list and populate drop-down
@@ -98,7 +98,7 @@ server <- function(input, output,session) {
   output$datasetTable<- renderTable({
     user=input$username
     read.csv(paste("data/",user,"_param.csv",sep=""))
-    #read.csv('data/param.csv',stringsAsFactors = F)
+    #read.csv('data/allusers_param.csv',stringsAsFactors = F)
   }, digits = 1)
   
   #Load Rdata
@@ -237,8 +237,9 @@ server <- function(input, output,session) {
       plot2=eval(parse(text=paste("plot2$",tsneb,sep="")))
     }
     
-    plot_grid(plot1,plot2)
-
+    p=plot_grid(plot1,plot2)
+    p2 <- add_sub(p, paste(input$projects,"_CompareTsne",sep=""), x = 0.87,vpadding = grid::unit(1, "lines"),size=11)
+    ggdraw(p2)
   })
   
   output$comptsne2 = renderPlot({
@@ -249,7 +250,7 @@ server <- function(input, output,session) {
   
   output$downloadtsneplot <- downloadHandler(
     filename = function() {
-      paste0("Compare_tsne.pdf")
+      paste0(input$projects,"_CompareTsne.pdf",sep="")
     },
     content = function(file){
       pdf(file,width=14,height = 8,useDingbats=FALSE)
@@ -367,7 +368,7 @@ server <- function(input, output,session) {
                         no.legend = FALSE,pt.size = input$pointa,do.return = T)
       plot2=eval(parse(text=paste("plot2$`",rownames(markers),"`",sep="")))
       if(input$checkviolin ==T){
-      plot3=VlnPlot(object = scrna, features.plot = rownames(markers),group.by = input$setidentlist,do.return = T,x.lab.rot=TRUE,point.size.use=NA,cols.use=cpallette)
+      plot3=VlnPlot(object = scrna, features.plot = rownames(markers),group.by = input$setidentlist,do.return = T,x.lab.rot=TRUE,point.size.use=0,cols.use=cpallette)
       }else{plot3=VlnPlot(object = scrna, features.plot = rownames(markers),group.by = input$setidentlist,do.return = T,x.lab.rot=TRUE,cols.use=cpallette)}
       plot4=RidgePlot(object = scrna, features.plot = rownames(markers),group.by = input$setidentlist,do.return = T,x.lab.rot=TRUE,cols.use=cpallette)
       
@@ -540,7 +541,21 @@ server <- function(input, output,session) {
                                           panel.grid.minor = element_blank())
     return(p)
   }
+  
 
+output$downloadbiplot <- downloadHandler(
+  filename = function() {
+    paste0(input$projects,"_",input$bigene_genea,"_",input$bigene_geneb,"_Bigene.pdf",sep="")
+  },
+  content = function(file){
+    pdf(file,width=9,height = 9,useDingbats=FALSE)
+    plot(bigene_plot(fileload(),
+                     c(input$bigene_genea,input$bigene_geneb),
+                     limita=input$bigene_rangea,
+                     limitb=input$bigene_rangeb,
+                     marker_size = input$bigene_pointsize))
+    dev.off()
+  })
   ####################################################
   ###################################################
   ########## Set ident to choose markers  ###########
@@ -1122,4 +1137,71 @@ server <- function(input, output,session) {
        dotplot()
      })
    })
+   
+   ######################################################################################################
+   ######################################################################################################
+   ###################### VARIABLE GENES TAB ############################################################
+   ######################################################################################################
+   ######################################################################################################
+   vargenes= reactive({
+     scrna=fileload()
+     var=as.data.frame(scrna@var.genes)
+     colnames(var)="Gene"
+     stat=scrna@hvg.info
+     stat$Gene=rownames(stat)
+     var=left_join(var,stat,by="Gene")
+   })
+   
+   output$vargenes = DT::renderDataTable({
+     withProgress(session = session, message = 'Loading...',detail = 'Please Wait...',{
+       DT::datatable(vargenes(),
+                     extensions = c('Buttons','Scroller'),
+                     options = list(dom = 'Bfrtip',
+                                    searchHighlight = TRUE,
+                                    pageLength = 10,
+                                    lengthMenu = list(c(30, 50, 100, 150, 200, -1), c('30', '50', '100', '150', '200', 'All')),
+                                    scrollX = TRUE,
+                                    buttons = c('copy', 'print')
+                     ),rownames=FALSE,caption= "Variable genes",selection = list(mode = 'single', selected =1),escape = F)
+     })
+   })
+   
+   ######################################################################################################
+   ######################################################################################################
+   ################################# PCA TAB ############################################################
+   ######################################################################################################
+   ######################################################################################################
+   output$ndim = renderUI({
+     scrna=fileload()
+     maxdim=length(scrna@dr$pca@sdev)
+     var=1:maxdim
+     selectInput("ndim","Choose number of dimensions",var,selected = 1)
+   })
+   
+   vizplot= reactive({
+     scrna=fileload()
+     dim=input$ndim
+     if(dim==1){
+       g1=VizPCA(object = scrna, pcs.use = 1:dim,nCol=1,font.size = 1,num.genes = input$ngenes)
+     }else{
+       g1=VizPCA(object = scrna, pcs.use = 1:dim,font.size = 1,num.genes = input$ngenes) 
+     }
+     return(g1) 
+   })
+   
+   output$vizplot = renderPlot({
+     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+       vizplot()
+     })
+   })
+   
+   output$downloadvizplot <- downloadHandler(
+     filename = function() {
+       paste0(input$projects,"_Vizplot.pdf",sep="")
+     },
+     content = function(file){
+       pdf(file,width=13,height = 9,useDingbats=FALSE)
+       plot(vizplot())
+       dev.off()
+     })
 }#end of server

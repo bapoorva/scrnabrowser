@@ -40,7 +40,9 @@ ui <- dashboardPage(
                               ),
                      
                      menuItem('Heatmap', tabName = 'heatmap', icon = icon('hand-o-right')),
-                     menuItem('Ligand Receptor Pairs', tabName = 'ligrec', icon = icon('hand-o-right'))
+                     menuItem('Ligand Receptor Pairs', tabName = 'ligrec', icon = icon('hand-o-right')),
+                     menuItem('Variable Genes', tabName = 'vargenes', icon = icon('hand-o-right'),badgeLabel = "new", badgeColor = "green"),
+                     menuItem('Principle component Analysis', tabName = 'pca', icon = icon('hand-o-right'),badgeLabel = "new", badgeColor = "green")
                    )#end of sidebar menu
   ),#end dashboardSidebar
   
@@ -143,7 +145,8 @@ ui <- dashboardPage(
                 textInput("bigene_geneb", label = "Gene B",value = "Sox9"),
                 #sliderInput("bigene_rangeb", "Expression Limits Gene B(log2(UMI))",min = 0, max = 10, value = 1.5,step=.25),
                 uiOutput("bigene_rangeb"),
-                sliderInput("bigene_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25)
+                sliderInput("bigene_pointsize", "Point Size:",min = 0, max = 5, value = 1,step=.25),
+                downloadButton('downloadbiplot', 'Download Bigene plot')
               )
             )
     ),#endbigeneplotTab
@@ -275,7 +278,7 @@ ui <- dashboardPage(
             ),
             box(title = "Table",solidHeader = TRUE,width=9,status='primary',
                 DT::dataTableOutput('clustable')
-            )#End FluidRow
+            )#End box
     ),#end of clusplot
     ######################################################################################################################################
     tabItem(tabName = "dotplot",
@@ -288,7 +291,23 @@ ui <- dashboardPage(
             box(title = "Dot Plot",solidHeader = TRUE,width=12,status='primary',
                 plotOutput("dotplot", height = 500)
             )
-    )#end of dotplot
+    ),#end of dotplot
+    ######################################################################################################################################
+    tabItem(tabName = "vargenes",
+            box(title = "Variable Genes",solidHeader = TRUE,width=12,status='primary',
+                DT::dataTableOutput('vargenes')
+            )#End box
+            ),#end of vargenes
+    ######################################################################################################################################
+    tabItem(tabName = "pca",
+            box(title = "Table",solidHeader = TRUE,width=12,status='primary',
+                fluidRow(
+                column(6,uiOutput("ndim")),
+                column(6,sliderInput("ngenes", "Number of genes:",min = 10, max = 50, value = 10,step=5))),
+                plotOutput("vizplot", height = 1500),
+                downloadButton('downloadvizplot', 'Download Plot')
+            )#End box
+            )#end of pca
     )#end of tabitems
   )#end of dashboard body
 )#end of dashboard page
