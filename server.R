@@ -180,13 +180,15 @@ server <- function(input, output,session) {
   output$umapa = renderUI({
     scrna=fileload()
     dimr=names(scrna@dr)
-    selectInput("umapa","Dimensionality Reduction",dimr,selected = "tsne")
+    withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+    selectInput("umapa","Dimensionality Reduction",dimr,selected = "tsne")})
   })
   
   output$umapb = renderUI({
     scrna=fileload()
     dimr=names(scrna@dr)
-    selectInput("umapb","Dimensionality Reduction",dimr,selected = "tsne")
+    withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+    selectInput("umapb","Dimensionality Reduction",dimr,selected = "tsne")})
   })
   
   comptsne2 = reactive({
@@ -293,7 +295,8 @@ server <- function(input, output,session) {
   output$umapint = renderUI({
     scrna=fileload()
     dimr=names(scrna@dr)
-    selectInput("umapint","Dimensionality Reduction",dimr,selected = "tsne")
+    withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+    selectInput("umapint","Dimensionality Reduction",dimr,selected = "tsne")})
   })
   
   intertsne = reactive({
@@ -362,7 +365,8 @@ server <- function(input, output,session) {
   output$umapdeg = renderUI({
     scrna=fileload()
     dimr=names(scrna@dr)
-    selectInput("umapdeg","Dimensionality Reduction",dimr,selected = "tsne")
+    withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+    selectInput("umapdeg","Dimensionality Reduction",dimr,selected = "tsne")})
   })
   
   comptsne = reactive({
