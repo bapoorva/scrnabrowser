@@ -108,6 +108,37 @@ server <- function(input, output,session) {
     loaddata=scrna
     return(loaddata)
   })
+  
+  ###################################################
+  ###################################################
+  ################## Project Summary  ###############
+  ###################################################
+  ###################################################
+  prjsumm <- reactive({
+   prj= read.csv(paste("data/",input$username,"_param.csv",sep=""))
+   prj=prj[prj$projects==input$projects,]
+   pname=prj$projects
+   pdesc=prj$desc
+   porg=prj$organism
+   scrna=fileload()
+   tcells=dim(scrna@data)[2]
+   tgenes=dim(scrna@data)[1]
+   if(is.null(scrna@dr$pca)){
+   maxdim=dim(scrna@dr$cca.aligned@cell.embeddings)[2]
+   }else{maxdim=length(scrna@dr$pca@sdev)}
+   str1 <- paste("Project name - ",as.character(pname))
+   str2 <- paste("Project Description - ",as.character(pdesc))
+   str3 <- paste("Organism - ",as.character(porg))
+   str4 <- paste("Total nummber of cells - ",tcells)
+   str5 <- paste("Total number of genes - ",tgenes)
+   str6 <- paste("Dimension - ",maxdim)
+   HTML(paste(str1, str2,str3,str4,str5,str6, sep = '<br/>'))
+  })
+  
+  output$prjsumm <- renderPrint({
+    df=prjsumm()
+    return(df)
+  })
   ###################################################
   ###################################################
   ####### Display Tsne plot with controls  ##########

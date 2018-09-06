@@ -6,15 +6,22 @@ library(d3heatmap)
 library(shinyjs)
 library(rglwidget)
 library(reshape2)
-options(shiny.sanitize.errors = TRUE)
+options(shiny.sanitize.errors = FALSE)
 ui <- dashboardPage(
   dashboardHeader(title = "sEuRaT",titleWidth = 350),
   dashboardSidebar(width = 350,
                    div(style="overflow-y: scroll"),
+                   tags$style(type="text/css",
+                              ".shiny-output-error { visibility: hidden; }",
+                              ".shiny-output-error:before { visibility: hidden; }"
+                   ),
                    tags$head(tags$style(HTML(".sidebar { height: 170vh; overflow-y: auto; }" ))),
                    sidebarMenu(
                      menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
                      uiOutput("projects"),
+                     menuItem('Project Summary', tabName = 'summ', icon = icon('hand-o-right')),
+                     menuItem('Variable Genes', tabName = 'vargenes', icon = icon('hand-o-right'),badgeLabel = "new", badgeColor = "green"),
+                     menuItem('Principle component Analysis', tabName = 'pca', icon = icon('hand-o-right'),badgeLabel = "new", badgeColor = "green"),
                      menuItem('tSNE Plots', tabName = 'tplot', icon = icon('hand-o-right'),
                               menuSubItem("Compare tSNE Plots", tabName = "tsneplot"),
                               menuSubItem("Interactive tSNE/uMap Plot", tabName = "intertsne")
@@ -40,9 +47,7 @@ ui <- dashboardPage(
                               ),
                      
                      menuItem('Heatmap', tabName = 'heatmap', icon = icon('hand-o-right')),
-                     menuItem('Ligand Receptor Pairs', tabName = 'ligrec', icon = icon('hand-o-right')),
-                     menuItem('Variable Genes', tabName = 'vargenes', icon = icon('hand-o-right'),badgeLabel = "new", badgeColor = "green"),
-                     menuItem('Principle component Analysis', tabName = 'pca', icon = icon('hand-o-right'),badgeLabel = "new", badgeColor = "green")
+                     menuItem('Ligand Receptor Pairs', tabName = 'ligrec', icon = icon('hand-o-right'))
                    )#end of sidebar menu
   ),#end dashboardSidebar
   
@@ -59,6 +64,16 @@ ui <- dashboardPage(
                 tableOutput("datasetTable")
               )
       ),
+      ######################################################################################################################################
+      
+      tabItem(tabName = "summ",
+              box(
+                width = 12, status = "primary",solidHeader = TRUE,
+                title = "Project Summary",
+                htmlOutput("prjsumm")
+              )
+      ),
+      
     ######################################################################################################################################
     tabItem(tabName = "tsneplot",
             box(title = "Compare tSNE plots",solidHeader = TRUE,width=12,status='primary',
