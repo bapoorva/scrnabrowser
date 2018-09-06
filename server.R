@@ -1252,11 +1252,8 @@ output$downloadbiplot <- downloadHandler(
    vizplot= reactive({
      scrna=fileload()
      dim=input$ndim
-     if(dim==1){
-       g1=VizPCA(object = scrna, pcs.use = 1:dim,nCol=1,font.size = 1,num.genes = input$ngenes)
-     }else{
-       g1=VizPCA(object = scrna, pcs.use = 1:dim,font.size = 1,num.genes = input$ngenes) 
-     }
+       g1=VizPCA(object = scrna, pcs.use = dim:dim,nCol=1,font.size = 1,num.genes = input$ngenes)
+     
      return(g1) 
    })
    

@@ -315,13 +315,13 @@ ui <- dashboardPage(
             ),#end of vargenes
     ######################################################################################################################################
     tabItem(tabName = "pca",
-            box(title = "Table",solidHeader = TRUE,width=12,status='primary',
-                fluidRow(
-                column(6,uiOutput("ndim")),
-                column(6,sliderInput("ngenes", "Number of genes:",min = 10, max = 50, value = 10,step=5))),
-                plotOutput("vizplot", height = 1500)
+            box(title = "Gene Plots",solidHeader = TRUE,width=8,status='primary',
+                plotOutput("vizplot", height = 800)
                 #downloadButton('downloadvizplot', 'Download Plot')
-            )#End box
+            ),#End box
+            box(title = "Controls",solidHeader = TRUE,width=4,status='primary',
+                uiOutput("ndim"),
+                sliderInput("ngenes", "Number of genes:",min = 10, max = 50, value = 10,step=5))
             )#end of pca
     )#end of tabitems
   )#end of dashboard body
