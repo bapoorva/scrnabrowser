@@ -11,14 +11,15 @@ ui <- dashboardPage(
   dashboardHeader(title = "sEuRaT",titleWidth = 350),
   dashboardSidebar(width = 350,
                    div(style="overflow-y: scroll"),
-                   tags$style(type="text/css",
-                              ".shiny-output-error { visibility: hidden; }",
-                              ".shiny-output-error:before { visibility: hidden; }"
-                   ),
-                   tags$head(tags$style(HTML(".sidebar { height: 170vh; overflow-y: auto; }" ))),
+                   # tags$style(type="text/css",
+                   #            ".shiny-output-error { visibility: hidden; }",
+                   #            ".shiny-output-error:before { visibility: hidden; }"
+                   # ),
+                   tags$head(tags$style(HTML(".sidebar { height: 250vh; overflow-y: auto; }" ))),
                    sidebarMenu(
                      menuItem("Dashboard", tabName = "dashboard", icon = icon("dashboard")),
                      uiOutput("projects"),
+                     #actionButton('load',"Load Project", icon = NULL),
                      menuItem('Project Summary', tabName = 'summ', icon = icon('hand-o-right')),
                      menuItem('Variable Genes', tabName = 'vargenes', icon = icon('hand-o-right'),badgeLabel = "new", badgeColor = "green"),
                      menuItem('Principle component Analysis', tabName = 'pca', icon = icon('hand-o-right'),badgeLabel = "new", badgeColor = "green"),
@@ -47,7 +48,8 @@ ui <- dashboardPage(
                               ),
                      
                      menuItem('Heatmap', tabName = 'heatmap', icon = icon('hand-o-right')),
-                     menuItem('Ligand Receptor Pairs', tabName = 'ligrec', icon = icon('hand-o-right'))
+                     menuItem('Ligand Receptor Pairs', tabName = 'ligrec', icon = icon('hand-o-right')),
+                     menuItem('Ligand Receptor Network', tabName = 'network', icon = icon('hand-o-right'))
                    )#end of sidebar menu
   ),#end dashboardSidebar
   
@@ -59,7 +61,7 @@ ui <- dashboardPage(
     tabItems(
       tabItem(tabName = "dashboard",
               box(
-                width = 10, status = "primary",solidHeader = TRUE,
+                width = 12, status = "primary",solidHeader = TRUE,
                 title = "scRNA Data Sets",
                 tableOutput("datasetTable")
               )
@@ -323,6 +325,16 @@ ui <- dashboardPage(
                 uiOutput("ndim"),
                 sliderInput("ngenes", "Number of genes:",min = 10, max = 50, value = 10,step=5))
             )#end of pca
+    ######################################################################################################################################
+    # tabItem(tabName = "network",
+    #         box(title = "Network",solidHeader = TRUE,width=12,status='primary',
+    #             plotOutput("lrnetwork", height = 800)
+    #         ),#End box
+    #         box(title = "Ligand-Receptor pairs",solidHeader = TRUE,width=12,status='primary',
+    #             DT::dataTableOutput('pairs_res2')
+    # ))#end of network
+    ######################################################################################################################################
+    
     )#end of tabitems
   )#end of dashboard body
 )#end of dashboard page

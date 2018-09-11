@@ -83,8 +83,13 @@ server <- function(input, output,session) {
   #Read the parameter file
   readexcel = reactive({
      user=input$username
-     file = read.csv(paste("data/",user,"_param.csv",sep=""))
-    #file = read.csv("data/allusers_param.csv")
+     #file = read.csv(paste("data/",user,"_param.csv",sep=""))
+    file = read.csv("data/param.csv")
+    if(user=="allusers"){
+      file=file
+    }else{
+      file=file[file$user==user,]
+    }
   })
   
   #Get Project list and populate drop-down
@@ -97,25 +102,53 @@ server <- function(input, output,session) {
   #display project list in Dashboard
   output$datasetTable<- renderTable({
     user=input$username
-    read.csv(paste("data/",user,"_param.csv",sep=""))
-    #read.csv('data/allusers_param.csv',stringsAsFactors = F)
+    #read.csv(paste("data/",user,"_param.csv",sep=""))
+    file=read.csv('data/param.csv',stringsAsFactors = F)
+    colnames(file)=c("Project Name","Project Description","Organism","Username")
+    file=file[order(file$`Project Name`),]
+    if(user=="allusers"){
+      file=file
+    }else{
+      file=file[file$user==user,] %>% dplyr::select(-user)
+      colnames(file)=c("Project Name","Project Description","Organism")
+      file=file[order(file$`Project Name`),]
+    }
   }, digits = 1)
   
   #Load Rdata
+  
+  #scrna <- reactiveValues(scrna = NULL)
+  
+  # observeEvent(input$load, {
+  #   inFile = paste('data/',as.character(input$projects),'.RData',sep = '')
+  #   withProgress(session = session, message = 'Loading Data...',detail = 'Please Wait...',{
+  #   load(inFile)
+  #   })
+  #   scrna <<- scrna
+  # })  
   fileload <- reactive({
+    #if(input$load != 0){
     inFile = paste('data/',as.character(input$projects),'.RData',sep = '')
     load(inFile)
     loaddata=scrna
     return(loaddata)
+    #scrna <<- scrna
+    #}
   })
-  
+
   ###################################################
   ###################################################
   ################## Project Summary  ###############
   ###################################################
   ###################################################
   prjsumm <- reactive({
-   prj= read.csv(paste("data/",input$username,"_param.csv",sep=""))
+    user=input$username
+   prj= read.csv("data/param.csv")
+   if(user=="allusers"){
+     prj=prj
+   }else{
+     prj=prj[prj$user==user,] 
+   }
    prj=prj[prj$projects==input$projects,]
    pname=prj$projects
    pdesc=prj$desc
@@ -136,8 +169,10 @@ server <- function(input, output,session) {
   })
   
   output$prjsumm <- renderPrint({
+    withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
     df=prjsumm()
     return(df)
+    })
   })
   ###################################################
   ###################################################
@@ -287,6 +322,7 @@ server <- function(input, output,session) {
   })
   
   output$comptsne2 = renderPlot({
+    input$load
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
       comptsne2()
     })
@@ -471,7 +507,7 @@ server <- function(input, output,session) {
   output$bigene_rangea <- renderUI({
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
       #textInput("bigene_genea", label = "Gene A",value = bigene_genea)
-    r<-getGeneRange(fileload(),input$bigene_genea)
+    r<-getGeneRange(scrna,input$bigene_genea)
     sliderInput("bigene_rangea", "Expression Limit Gene A (log2 UMI)",
                 min = 0, max = r[2], value = c(r[1],r[2]),step=.25)
   })
@@ -480,7 +516,7 @@ server <- function(input, output,session) {
   output$bigene_rangeb <- renderUI({
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
       #textInput("bigene_geneb", label = "Gene B",value = bigene_geneb)
-    r<-getGeneRange(fileload(),input$bigene_geneb)
+    r<-getGeneRange(scrna,input$bigene_geneb)
     sliderInput("bigene_rangeb", "Expression Limit Gene B (log2 UMI)",
                 min = 0, max = r[2], value = c(r[1],r[2]),step=.25)
   })
@@ -494,7 +530,7 @@ server <- function(input, output,session) {
       validate(need(nrow(table) > 0,"No Ligand-receptor pairs found"))
       bigene_genea=table$ligand
       #textInput("bigene_genea", label = "Gene A",value = bigene_genea)
-      r<-getGeneRange(fileload(),bigene_genea)
+      r<-getGeneRange(scrna,bigene_genea)
       sliderInput("bigene_rangea", "Expression Limit of Ligand Gene (log2 UMI)",
                   min = 0, max = r[2], value = c(r[1],r[2]),step=.25)
     })
@@ -508,7 +544,7 @@ server <- function(input, output,session) {
       table=table[s, ,drop=FALSE]
       bigene_geneb=table$receptor
       #textInput("bigene_geneb", label = "Gene B",value = bigene_geneb)
-      r<-getGeneRange(fileload(),bigene_geneb)
+      r<-getGeneRange(scrna,bigene_geneb)
       sliderInput("bigene_rangeb", "Expression Limit of Receptor Gene (log2 UMI)",
                   min = 0, max = r[2], value = c(r[1],r[2]),step=.25)
     })
@@ -516,7 +552,7 @@ server <- function(input, output,session) {
   
   output$bigeneplot <- renderPlot({
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
-    bigene_plot(fileload(),
+    bigene_plot(scrna,
                 c(input$bigene_genea,input$bigene_geneb),
                 limita=input$bigene_rangea,
                 limitb=input$bigene_rangeb,
@@ -532,7 +568,7 @@ server <- function(input, output,session) {
       validate(need(nrow(table) > 0,"No Ligand-receptor pairs found"))
       bigene_genea=as.character(table$ligand)
       bigene_geneb=as.character(table$receptor)
-      bigene_plot(fileload(),
+      bigene_plot(scrna,
                   c(bigene_genea,bigene_geneb),
                   limita=input$bigene_rangea,
                   limitb=input$bigene_rangeb,
@@ -607,7 +643,7 @@ output$downloadbiplot <- downloadHandler(
   },
   content = function(file){
     pdf(file,width=9,height = 9,useDingbats=FALSE)
-    plot(bigene_plot(fileload(),
+    plot(bigene_plot(scrna,
                      c(input$bigene_genea,input$bigene_geneb),
                      limita=input$bigene_rangea,
                      limitb=input$bigene_rangeb,
@@ -999,6 +1035,24 @@ output$downloadbiplot <- downloadHandler(
      })
    })
    
+   output$pairs_res2 = DT::renderDataTable({
+     input$pairby
+     input$clust1
+     input$clust2
+     input$genelist1
+     input$genelist2
+     withProgress(session = session, message = 'Loading...',detail = 'Please Wait...',{
+       DT::datatable(finalres(),
+                     extensions = c('Buttons','Scroller'),
+                     options = list(dom = 'Bfrtip',
+                                    searchHighlight = TRUE,
+                                    pageLength = 10,
+                                    lengthMenu = list(c(30, 50, 100, 150, 200, -1), c('30', '50', '100', '150', '200', 'All')),
+                                    scrollX = TRUE,
+                                    buttons = c('copy', 'print')
+                     ),rownames=FALSE,caption= "Result",selection = list(mode = 'single', selected =1),escape = F)
+     })
+   })
    ###################################################
    ###################################################
    ########### Plot gene expression  ################
