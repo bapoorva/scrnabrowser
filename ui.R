@@ -156,6 +156,7 @@ ui <- dashboardPage(
 
               box(
                 title = "Controls",solidHeader = TRUE,width=4,status='primary',
+                uiOutput("bigenedim"),
                 textInput("bigene_genea", label = "Gene A",value = "Sox2"),
                 #sliderInput("bigene_rangea", "Expression Limits Gene A(log2(UMI))",min = 0, max = 10, value = 0.5,step=.25),
                 uiOutput("bigene_rangea"),
@@ -324,15 +325,15 @@ ui <- dashboardPage(
             box(title = "Controls",solidHeader = TRUE,width=4,status='primary',
                 uiOutput("ndim"),
                 sliderInput("ngenes", "Number of genes:",min = 10, max = 50, value = 10,step=5))
-            )#end of pca
+            ),#end of pca
     ######################################################################################################################################
-    # tabItem(tabName = "network",
-    #         box(title = "Network",solidHeader = TRUE,width=12,status='primary',
-    #             plotOutput("lrnetwork", height = 800)
-    #         ),#End box
-    #         box(title = "Ligand-Receptor pairs",solidHeader = TRUE,width=12,status='primary',
-    #             DT::dataTableOutput('pairs_res2')
-    # ))#end of network
+    tabItem(tabName = "network",
+            box(title = "Network",solidHeader = TRUE,width=12,status='primary',
+                plotOutput("lrnetwork", height = 800)
+            ),#End box
+            box(title = "Ligand-Receptor pairs",solidHeader = TRUE,width=12,status='primary',
+                DT::dataTableOutput('pairs_res2')
+    ))#end of network
     ######################################################################################################################################
     
     )#end of tabitems

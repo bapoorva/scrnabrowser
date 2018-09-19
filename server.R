@@ -16,6 +16,9 @@ library(rglwidget)
 library(Seurat)
 library(cowplot)
 library(data.table)
+library(ggnetwork)
+library(igraph)
+library(intergraph)
 cpallette=c("#64B2CE", "#DA5724", "#74D944", "#CE50CA", "#C0717C", "#CBD588", "#5F7FC7",
             "#673770", "#D3D93E", "#38333E", "#508578", "#D7C1B1", "#689030", "#AD6F3B", "#CD9BCD",
             "#D14285", "#6DDE88", "#652926", "#7FDCC0", "#C84248", "#8569D5", "#5E738F", "#D1A33D",
@@ -269,50 +272,50 @@ server <- function(input, output,session) {
     tsne=names(met[met==FALSE])
 
     if(input$categorya2 =="clust" & input$subsa==F){
-      plot1=DimPlot(object = scrna,reduction.use=input$umapa,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa2,label.size = 7, cols.use=cpallette)
+      plot1=DimPlot(object = scrna,reduction.use=input$umapa,group.by = "ident",no.legend = FALSE,do.label = TRUE,vector.friendly = T, do.return=T, pt.size = input$pointa2,label.size = 7, cols.use=cpallette)
     }else if(input$categorya2 =="clust" & input$subsa==TRUE){
       cells=names(scrna@ident[scrna@ident==input$selclust])
-      plot1=DimPlot(object = scrna,reduction.use=input$umapa,cells.highlight=cells,group.by = "ident",no.legend = FALSE,do.label = F, do.return=T, pt.size = input$pointa2, cols.use=cpallette)
+      plot1=DimPlot(object = scrna,reduction.use=input$umapa,cells.highlight=cells,group.by = "ident",vector.friendly = T,no.legend = FALSE,do.label = F, do.return=T, pt.size = input$pointa2, cols.use=cpallette)
     }else if(input$categorya2=="geneexp"){
-      plot1=FeaturePlot(object = scrna,reduction.use=input$umapa, features.plot = input$gene1a, cols.use = c("grey", "blue"),do.return=T,pt.size = input$pointa2,no.legend = FALSE)
+      plot1=FeaturePlot(object = scrna,reduction.use=input$umapa,vector.friendly = T, features.plot = input$gene1a, cols.use = c("grey", "blue"),do.return=T,pt.size = input$pointa2,no.legend = FALSE)
       plot1=eval(parse(text=paste("plot1$",input$gene1a,sep="")))
     }else if(input$categorya2 =="var" & input$tsnea2 %in% tsne & input$subsa==FALSE){
-      plot1=DimPlot(object = scrna,reduction.use=input$umapa,group.by = tsnea,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2,label.size = 7, cols.use=cpallette)
+      plot1=DimPlot(object = scrna,reduction.use=input$umapa,group.by = tsnea,no.legend = FALSE,do.label = TRUE,vector.friendly = T, do.return=T,pt.size = input$pointa2,label.size = 7, cols.use=cpallette)
     }else if(input$categorya2 =="var" & input$tsnea2 %in% tsne & input$subsa==TRUE){
       t=paste("rownames(scrna@meta.data[scrna@meta.data$",input$tsnea2,"==\"",input$selclust2,"\",])",sep="")
       cells=eval(parse(text=t))
-      plot1=DimPlot(object = scrna,reduction.use=input$umapa,group.by = tsnea,cells.highlight=cells,no.legend = FALSE,do.label =F, do.return=T,pt.size = input$pointa2, cols.use=cpallette)
+      plot1=DimPlot(object = scrna,reduction.use=input$umapa,group.by = tsnea,cells.highlight=cells,vector.friendly = T,no.legend = FALSE,do.label =F, do.return=T,pt.size = input$pointa2, cols.use=cpallette)
     }else if(input$categorya2 =="var" & input$tsnea2 %in% feature & input$subsa==FALSE){
-      plot1=FeaturePlot(object = scrna,reduction.use=input$umapa, features.plot = tsnea, cols.use = c("grey", "blue"),do.return=T,pt.size = input$pointa2,no.legend = FALSE)
+      plot1=FeaturePlot(object = scrna,reduction.use=input$umapa,vector.friendly = T, features.plot = tsnea, cols.use = c("grey", "blue"),do.return=T,pt.size = input$pointa2,no.legend = FALSE)
       plot1=eval(parse(text=paste("plot1$",tsnea,sep="")))
     }else if(input$categorya2 =="var" & input$tsnea2 %in% feature & input$subsa==TRUE){
       t=paste('rownames(scrna@meta.data[scrna@meta.data$',input$tsnea2, '>',input$tsnea2lim[1], ' & metadata$',input$tsnea2, '<', input$tsnea2lim[2],',])',sep="")
       cells=eval(parse(text=t))
-      plot1=FeaturePlot(object = scrna,reduction.use=input$umapa, features.plot = tsnea,cells.use = cells, cols.use = c("grey", "blue"),do.return=T,pt.size = input$pointa2,no.legend = FALSE)
+      plot1=FeaturePlot(object = scrna,reduction.use=input$umapa, features.plot = tsnea,cells.use = cells,vector.friendly = T, cols.use = c("grey", "blue"),do.return=T,pt.size = input$pointa2,no.legend = FALSE)
       plot1=eval(parse(text=paste("plot1$",tsnea,sep="")))
      }
 
     if(input$categoryb2 =="clust" & input$subsb==F){
-      plot2=DimPlot(object = scrna,reduction.use=input$umapb,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2,label.size = 7, cols.use=cpallette)
+      plot2=DimPlot(object = scrna,reduction.use=input$umapb,group.by = "ident",no.legend = FALSE,vector.friendly = T,do.label = TRUE, do.return=T,pt.size = input$pointa2,label.size = 7, cols.use=cpallette)
     }else if(input$categoryb2 =="clust" & input$subsb==TRUE){
       cells=names(scrna@ident[scrna@ident==input$selclustb])
-      plot2=DimPlot(object = scrna,reduction.use=input$umapb,cells.highlight=cells,group.by = "ident",no.legend = FALSE,do.label = F, do.return=T, pt.size = input$pointa2, cols.use=cpallette)
+      plot2=DimPlot(object = scrna,reduction.use=input$umapb,cells.highlight=cells,group.by = "ident",vector.friendly = T,no.legend = FALSE,do.label = F, do.return=T, pt.size = input$pointa2, cols.use=cpallette)
     }else if(input$categoryb2=="geneexp"){
-      plot2=FeaturePlot(object = scrna,reduction.use=input$umapb, features.plot = input$gene2a, cols.use = c("grey", "blue"),do.return=T,pt.size = input$pointa2,no.legend = FALSE)
+      plot2=FeaturePlot(object = scrna,reduction.use=input$umapb,vector.friendly = T, features.plot = input$gene2a, cols.use = c("grey", "blue"),do.return=T,pt.size = input$pointa2,no.legend = FALSE)
       plot2=eval(parse(text=paste("plot2$",input$gene2a,sep="")))
     }else if(input$categoryb2 =="var" & input$tsneb2 %in% tsne & input$subsb==F){
-      plot2=DimPlot(object = scrna,reduction.use=input$umapb,group.by = tsneb,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa2,label.size = 7, cols.use=cpallette)
+      plot2=DimPlot(object = scrna,reduction.use=input$umapb,group.by = tsneb,no.legend = FALSE,vector.friendly = T,do.label = TRUE, do.return=T,pt.size = input$pointa2,label.size = 7, cols.use=cpallette)
     }else if(input$categoryb2 =="var" & input$tsneb2 %in% tsne & input$subsb==TRUE){
       t=paste("rownames(scrna@meta.data[scrna@meta.data$",input$tsneb2,"==\"",input$selclustb2,"\",])",sep="")
       cells=eval(parse(text=t))
-      plot2=DimPlot(object = scrna,reduction.use=input$umapb,group.by = tsneb,cells.highlight=cells,no.legend = FALSE,do.label = F, do.return=T,pt.size = input$pointa2, cols.use=cpallette)
+      plot2=DimPlot(object = scrna,reduction.use=input$umapb,group.by = tsneb,cells.highlight=cells,vector.friendly = T,no.legend = FALSE,do.label = F, do.return=T,pt.size = input$pointa2, cols.use=cpallette)
     }else if(input$categoryb2 =="var" & input$tsneb2 %in% feature & input$subsb==F){
-      plot2=FeaturePlot(object = scrna,reduction.use=input$umapb, features.plot = tsneb, cols.use = c("grey", "blue"),do.return=T,pt.size = input$pointa2,no.legend = FALSE)
+      plot2=FeaturePlot(object = scrna,reduction.use=input$umapb, features.plot = tsneb,vector.friendly = T, cols.use = c("grey", "blue"),do.return=T,pt.size = input$pointa2,no.legend = FALSE)
       plot2=eval(parse(text=paste("plot2$",tsneb,sep="")))
     }else if(input$categoryb2 =="var" & input$tsneb2 %in% feature & input$subsb==TRUE){
       t=paste('rownames(scrna@meta.data[scrna@meta.data$',input$tsneb2, '>',input$tsneb2lim[1], ' & metadata$',input$tsneb2, '<', input$tsneb2lim[2],',])',sep="")
       cells=eval(parse(text=t))
-      plot2=FeaturePlot(object = scrna,reduction.use=input$umapb, features.plot = tsneb,cells.use = cells, cols.use = c("grey", "blue"),do.return=T,pt.size = input$pointa2,no.legend = FALSE)
+      plot2=FeaturePlot(object = scrna,reduction.use=input$umapb, features.plot = tsneb,vector.friendly = T,cells.use = cells, cols.use = c("grey", "blue"),do.return=T,pt.size = input$pointa2,no.legend = FALSE)
       plot2=eval(parse(text=paste("plot2$",tsneb,sep="")))
     }
     
@@ -368,7 +371,7 @@ server <- function(input, output,session) {
   
   intertsne = reactive({
     scrna=fileload()
-    plot1=DimPlot(object = scrna,reduction.use=input$umapint,group.by = input$setcategory,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$umap_pointsize,label.size = 5, cols.use=cpallette)
+    plot1=DimPlot(object = scrna,reduction.use=input$umapint,group.by = input$setcategory,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$umap_pointsize,label.size = 5,vector.friendly = T, cols.use=cpallette)
     plot=ggplotly(plot1)
     return(plot)
   })
@@ -391,12 +394,12 @@ server <- function(input, output,session) {
     tsne=names(met[met==FALSE])
     
     if(input$intercat=="geneexp"){
-      plot1=FeaturePlot(object = scrna,reduction.use=input$umapint, features.plot = input$geneinter, cols.use = c("grey", "blue"),do.return=T,pt.size = input$umap_pointsize,no.legend = FALSE)
+      plot1=FeaturePlot(object = scrna,reduction.use=input$umapint, features.plot = input$geneinter,vector.friendly = T, cols.use = c("grey", "blue"),do.return=T,pt.size = input$umap_pointsize,no.legend = FALSE)
       plot1=eval(parse(text=paste("plot1$",input$geneinter,sep="")))
     }else if(input$intercat =="var" & tsnea %in% tsne){
-      plot1=DimPlot(object = scrna,reduction.use=input$umapint,group.by = tsnea,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$umap_pointsize,label.size = 7, cols.use=cpallette)
+      plot1=DimPlot(object = scrna,reduction.use=input$umapint,group.by = tsnea,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$umap_pointsize,label.size = 7, cols.use=cpallette,vector.friendly = T)
     }else if(input$intercat =="var" & tsnea %in% feature){
-      plot1=FeaturePlot(object = scrna,reduction.use=input$umapint, features.plot = tsnea, cols.use = c("grey", "blue"),do.return=T,pt.size = input$umap_pointsize,no.legend = FALSE)
+      plot1=FeaturePlot(object = scrna,reduction.use=input$umapint, features.plot = tsnea,vector.friendly = T, cols.use = c("grey", "blue"),do.return=T,pt.size = input$umap_pointsize,no.legend = FALSE)
       plot1=eval(parse(text=paste("plot1$",tsnea,sep="")))
     }
     plot=ggplotly(plot1)
@@ -447,18 +450,18 @@ server <- function(input, output,session) {
     tsne=names(met[met==FALSE])
     
     if(input$tsnea =="Cell.group"){
-      plot1=DimPlot(object = scrna,reduction.use=input$umapdeg,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa,label.size = 7,cols.use=cpallette) + theme(legend.position="bottom")
+      plot1=DimPlot(object = scrna,reduction.use=input$umapdeg,group.by = "ident",no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointa,label.size = 7,cols.use=cpallette,vector.friendly=TRUE) + theme(legend.position="bottom")
     }else if(input$tsnea %in% tsne){
-      plot1=DimPlot(object = scrna,reduction.use=input$umapdeg,group.by = tsnea,no.legend = FALSE,do.label = TRUE, do.return=T,pt.size = input$pointa,label.size = 7,cols.use=cpallette) + theme(legend.position="bottom")
+      plot1=DimPlot(object = scrna,reduction.use=input$umapdeg,group.by = tsnea,no.legend = FALSE,do.label = TRUE,vector.friendly=TRUE, do.return=T,pt.size = input$pointa,label.size = 7,cols.use=cpallette) + theme(legend.position="bottom")
     }else if(input$tsnea %in% feature){
-      plot1=FeaturePlot(object = scrna, features.plot = tsnea, cols.use = c("grey", "blue"),reduction.use = input$umapdeg,do.return=T,pt.size = input$pointa)
+      plot1=FeaturePlot(object = scrna, features.plot = tsnea, cols.use = c("grey", "blue"),vector.friendly = T,reduction.use = input$umapdeg,do.return=T,pt.size = input$pointa)
       plot1=eval(parse(text=paste("plot1$`",tsnea,"`",sep="")))
     }
    
     markers=markergenes()
       s=input$markergenes_rows_selected # get  index of selected row from table
       markers=markers[s, ,drop=FALSE]
-      plot2=FeaturePlot(object = scrna, features.plot = rownames(markers), cols.use = c("grey","blue"),reduction.use = input$umapdeg,
+      plot2=FeaturePlot(object = scrna, features.plot = rownames(markers), cols.use = c("grey","blue"),reduction.use = input$umapdeg,vector.friendly = T,
                         no.legend = FALSE,pt.size = input$pointa,do.return = T)
       plot2=eval(parse(text=paste("plot2$`",rownames(markers),"`",sep="")))
       if(input$checkviolin ==T){
@@ -469,8 +472,9 @@ server <- function(input, output,session) {
     
       row1=plot_grid(plot1,plot2,align = 'h', rel_heights = c(1, 1),axis="lr", nrow=1)
       row2=plot_grid(plot3,plot4,align = 'h', rel_heights = c(1, 1),axis="lr", nrow=1)
-    plot_grid(row1,row2,align = 'v', rel_heights = c(1.7, 1),axis="tb",ncol=1)
-
+    p=plot_grid(row1,row2,align = 'v', rel_heights = c(1.7, 1),axis="tb",ncol=1)
+    p2 <- add_sub(p, paste(input$projects,"_Differential_Exp",sep=""), x = 0.87,vpadding = grid::unit(1, "lines"),size=11)
+    ggdraw(p2)
   })
   
   output$comptsne = renderPlot({
@@ -495,7 +499,7 @@ server <- function(input, output,session) {
   ######################################################################################################
   ######################################################################################################
   getGeneRange <- function(scrna,gene_probes){
-    gene_values=as.data.frame(FetchData(scrna,gene_probes[1]))
+    gene_values=as.data.frame(FetchData(fileload(),gene_probes[1]))
     minr<- round(min(gene_values),2) 
     maxr<- round(max(gene_values),2)
     
@@ -507,7 +511,7 @@ server <- function(input, output,session) {
   output$bigene_rangea <- renderUI({
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
       #textInput("bigene_genea", label = "Gene A",value = bigene_genea)
-    r<-getGeneRange(scrna,input$bigene_genea)
+    r<-getGeneRange(fileload(),input$bigene_genea)
     sliderInput("bigene_rangea", "Expression Limit Gene A (log2 UMI)",
                 min = 0, max = r[2], value = c(r[1],r[2]),step=.25)
   })
@@ -516,7 +520,7 @@ server <- function(input, output,session) {
   output$bigene_rangeb <- renderUI({
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
       #textInput("bigene_geneb", label = "Gene B",value = bigene_geneb)
-    r<-getGeneRange(scrna,input$bigene_geneb)
+    r<-getGeneRange(fileload(),input$bigene_geneb)
     sliderInput("bigene_rangeb", "Expression Limit Gene B (log2 UMI)",
                 min = 0, max = r[2], value = c(r[1],r[2]),step=.25)
   })
@@ -530,7 +534,7 @@ server <- function(input, output,session) {
       validate(need(nrow(table) > 0,"No Ligand-receptor pairs found"))
       bigene_genea=table$ligand
       #textInput("bigene_genea", label = "Gene A",value = bigene_genea)
-      r<-getGeneRange(scrna,bigene_genea)
+      r<-getGeneRange(fileload(),bigene_genea)
       sliderInput("bigene_rangea", "Expression Limit of Ligand Gene (log2 UMI)",
                   min = 0, max = r[2], value = c(r[1],r[2]),step=.25)
     })
@@ -544,7 +548,7 @@ server <- function(input, output,session) {
       table=table[s, ,drop=FALSE]
       bigene_geneb=table$receptor
       #textInput("bigene_geneb", label = "Gene B",value = bigene_geneb)
-      r<-getGeneRange(scrna,bigene_geneb)
+      r<-getGeneRange(fileload(),bigene_geneb)
       sliderInput("bigene_rangeb", "Expression Limit of Receptor Gene (log2 UMI)",
                   min = 0, max = r[2], value = c(r[1],r[2]),step=.25)
     })
@@ -552,11 +556,13 @@ server <- function(input, output,session) {
   
   output$bigeneplot <- renderPlot({
     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
-    bigene_plot(scrna,
+    p=bigene_plot(fileload(),
                 c(input$bigene_genea,input$bigene_geneb),
                 limita=input$bigene_rangea,
                 limitb=input$bigene_rangeb,
                 marker_size = input$bigene_pointsize)
+    p2 <- add_sub(p, paste(input$projects,"_Bigeneplot",sep=""), x = 0.87,vpadding = grid::unit(1, "lines"),size=11)
+    ggdraw(p2)
   })
   })
 
@@ -568,11 +574,13 @@ server <- function(input, output,session) {
       validate(need(nrow(table) > 0,"No Ligand-receptor pairs found"))
       bigene_genea=as.character(table$ligand)
       bigene_geneb=as.character(table$receptor)
-      bigene_plot(scrna,
+      p=bigene_plot(fileload(),
                   c(bigene_genea,bigene_geneb),
                   limita=input$bigene_rangea,
                   limitb=input$bigene_rangeb,
                   marker_size = input$bigene_pointsize2)
+      p2 <- add_sub(p, paste(input$projects,"_Bigeneplot",sep=""), x = 0.87,vpadding = grid::unit(1, "lines"),size=11)
+      ggdraw(p2)
     })
   })
   
@@ -633,6 +641,7 @@ server <- function(input, output,session) {
                                           legend.text=element_text(size=14),
                                           panel.grid.major = element_blank(),
                                           panel.grid.minor = element_blank())
+    
     return(p)
   }
   
@@ -643,7 +652,7 @@ output$downloadbiplot <- downloadHandler(
   },
   content = function(file){
     pdf(file,width=9,height = 9,useDingbats=FALSE)
-    plot(bigene_plot(scrna,
+    plot(bigene_plot(fileload(),
                      c(input$bigene_genea,input$bigene_geneb),
                      limita=input$bigene_rangea,
                      limitb=input$bigene_rangeb,
@@ -808,7 +817,7 @@ output$downloadbiplot <- downloadHandler(
      })
    })
    
-   output$heatmap <- renderPlot({
+   heatmap <- reactive({
      withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
        scrna=fileload()
        markers=markergenes()
@@ -828,11 +837,18 @@ output$downloadbiplot <- downloadHandler(
          lowcol="red"
          midcol="white"
          highcol="blue"}
-       DoHeatmap(object = scrna, genes.use = rownames(markers)[1:input$heatmapgenes],group.by = input$hmpgrp, draw.line= T,
+       p=DoHeatmap(object = scrna, genes.use = rownames(markers)[1:input$heatmapgenes],group.by = input$hmpgrp, draw.line= T,
                  group.label.rot= T, col.low=lowcol, col.mid =midcol ,col.high = highcol,slim.col.label=TRUE)
+       p2 <- add_sub(p, paste(input$projects,"_Heatmap",sep=""), x = 0.87,vpadding = grid::unit(1, "lines"),size=11)
+       ggdraw(p2)
      })
    })
    
+   output$heatmap <- renderPlot({
+     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+       heatmap()
+     })
+   })
    
    output$downloadheatmap <- downloadHandler(
      filename = function() {
@@ -1068,7 +1084,7 @@ output$downloadbiplot <- downloadHandler(
    geplots = reactive({
      scrna=fileload()
      validate(need(input$geneid,"Enter the gene symbol"))
-     plot2=FeaturePlot(object = scrna, features.plot = input$geneid, cols.use = c("grey","blue"),reduction.use = input$umapge,
+     plot2=FeaturePlot(object = scrna, features.plot = input$geneid, cols.use = c("grey","blue"),reduction.use = input$umapge,vector.friendly = T,
                        no.legend = FALSE,pt.size = input$genenid_pointsize,do.return = T)
      plot2=eval(parse(text=paste("plot2$`",input$geneid,"`",sep="")))
      plot3=VlnPlot(object = scrna, features.plot = input$geneid,group.by = "ident",do.return = T,x.lab.rot=TRUE,cols.use=cpallette)
@@ -1204,8 +1220,8 @@ output$downloadbiplot <- downloadHandler(
      tab=tab[s, ,drop=FALSE]
      gene=rownames(tab)
      #cells <- WhichCells(object = scrna, ident = input$selectcluster)
-     plot1=DimPlot(object = scrna,reduction.use=input$umapclust,group.by = input$setvar,no.legend = FALSE,do.label = TRUE, do.return=T, pt.size = input$pointclust,label.size = 7, cols.use=cpallette)
-     plot2=FeaturePlot(object = scrna,reduction.use=input$umapclust, features.plot = gene, cols.use = c("grey", "blue"),do.return=T,pt.size = input$pointclust,no.legend = FALSE)
+     plot1=DimPlot(object = scrna,reduction.use=input$umapclust,group.by = input$setvar,no.legend = FALSE,do.label = TRUE,vector.friendly = T, do.return=T, pt.size = input$pointclust,label.size = 7, cols.use=cpallette)
+     plot2=FeaturePlot(object = scrna,reduction.use=input$umapclust, features.plot = gene, cols.use = c("grey", "blue"),vector.friendly = T,do.return=T,pt.size = input$pointclust,no.legend = FALSE)
      plot2=eval(parse(text=paste("plot2$`",gene,"`",sep="")))
      plot_grid(plot1,plot2)
    })
@@ -1306,6 +1322,7 @@ output$downloadbiplot <- downloadHandler(
    vizplot= reactive({
      scrna=fileload()
      dim=input$ndim
+     par(mar=c(4,5,3,3))
        g1=VizPCA(object = scrna, pcs.use = dim:dim,nCol=1,font.size = 1,num.genes = input$ngenes)
      
      return(g1) 
@@ -1326,4 +1343,34 @@ output$downloadbiplot <- downloadHandler(
        plot(vizplot())
        dev.off()
      })
+   ######################################################################################################
+   ######################################################################################################
+   ################################# Network ############################################################
+   ######################################################################################################
+   ######################################################################################################
+   lrnetwork= reactive({
+     result=finalres()
+     test=as.data.frame(table(result[,6:7]))
+     test=test[test$Freq!=0,]
+     node=as.data.frame(unique(c(as.character(test$Receptor_cluster),as.character(test$Lig_cluster))))
+     colnames(node)="node"
+     net <- graph_from_data_frame(d=test, vertices=node, directed=T) 
+     gg=ggnetwork(net)
+     obj=ggplot(gg, aes(x = x, y = y, xend = xend, yend = yend)) +
+       geom_edges(color = "grey75",arrow = arrow(length = unit(6, "pt"), type = "closed")) +
+       geom_nodes(color = "gold", size = 8) +
+       geom_nodelabel_repel(aes(label = vertex.names)) +
+       geom_edgetext(aes(label = Freq), color = "white", fill = "grey25") +
+       theme_minimal() +
+       theme(axis.text = element_blank(),
+             axis.title = element_blank(),
+             panel.grid = element_blank())
+     return(obj)
+   })
+   
+   output$lrnetwork = renderPlot({
+     withProgress(session = session, message = 'Generating...',detail = 'Please Wait...',{
+       lrnetwork()
+     })
+   })
 }#end of server
